@@ -1,0 +1,149 @@
+================================================================================
+                         PRIVATEVIEWER - GUIDA COMPLETA
+                              (Chromium Edition)
+================================================================================
+
+INDICE DEI CONTENUTI
+1. Cos'e' PrivateViewer
+2. Guida all'uso (Funzionalita' e Controlli Avanzati)
+3. Contesto Tecnico (Come funziona a basso livello su Windows)
+4. Differenze chiave con tool di DLL Injection (es. HideMyWindows)
+5. Casi d'uso corretti e consigliati
+6. Limitazioni fondamentali e contesto di sicurezza (es. Veyon / Monitoraggio)
+7. Come ricompilare il codice sorgente
+
+================================================================================
+1. COS'E' PRIVATEVIEWER
+================================================================================
+PrivateViewer e' una finestra di utilita' desktop autonoma e portatile per 
+Microsoft Windows progettata per proteggere contenuti sensibili, appunti privati 
+e navigazione web dalla cattura visiva accidentale.
+
+Quando e' attiva, la finestra e' perfettamente visibile e utilizzabile da chi e' 
+seduto davanti al monitor fisico, ma risulta completamente INVISIBILE a:
+- Screenshot di sistema (Strumento di cattura, Win + Shift + S, Stamp)
+- Software di registrazione dello schermo (OBS Studio, Camtasia, ecc.)
+- Software di condivisione dello schermo (Discord, Microsoft Teams, Zoom, Meet)
+- Motori di cattura desktop standard (Desktop Duplication API / DWM)
+
+================================================================================
+2. GUIDA ALL'USO (FUNZIONALITA' E CONTROLLI AVANZATI)
+================================================================================
+L'applicazione e' pronta all'uso e include gia' tutti i moduli necessari.
+
+- AVVIO:
+  Fai doppio clic su "PrivateViewer.exe".
+
+- INTERRUTTORE DI PROTEZIONE (In alto a sinistra):
+  * Tasto Verde "Invisibile a Cattura: ATTIVO": la protezione e' attiva. 
+    Qualsiasi screenshot o registrazione catturera' lo sfondo dietro la finestra.
+  * Tasto Rosso "Visibile a Cattura (DISATTIVO)": cliccando il pulsante puoi 
+    disattivare temporaneamente la protezione per verificare la differenza.
+
+- BOSS KEY RAPIDO GLOBALE (Tasto ESC):
+  Premendo il tasto [ESC] la finestra scompare all'istante nascondendosi nell'area 
+  di notifica di Windows (System Tray in basso a destra, icona a scudo).
+  Il tasto [ESC] viene intercettato anche quando stai navigando attivamente o 
+  scrivendo all'interno di una pagina web.
+  Per ripristinarla, fai clic sull'icona dello scudo nella barra di sistema.
+
+- BROWSER CHROMIUM MODERNO (Scheda 2):
+  Basato su Microsoft Edge WebView2 (motore Chromium moderno e aggiornato):
+  * Tasto [◀] (Indietro): Torna alla pagina precedente (Alt + Freccia Sinistra).
+  * Tasto [▶] (Avanti): Va alla pagina successiva (Alt + Freccia Destra).
+  * Tasto [🔄] / [✕] (Ricarica / Interrompi): Ricarica la pagina attiva (F5) o 
+    interrompe il caricamento se in corso.
+  * Tasto [🏠] (Home): Riporta istantaneamente alla pagina principale di Google.
+  * Barra URL Intelligente:
+    - Se inserisci un link (es. https://... o wikipedia.org), naviga direttamente.
+    - Se inserisci una parola o una frase, effettua automaticamente una ricerca 
+      su Google.
+    - Cliccando nella barra, il testo viene selezionato per una riscrittura rapida.
+  * Titolo Dinamico: Il titolo della scheda riflette il nome della pagina aperta.
+  * Profilo isolato: Cookie e cache sono salvati nella cartella utente locale.
+
+- NOTE PRIVATE (Scheda 1):
+  Un editor di testo integrato per scrivere appunti sensibili, incollare password 
+  temporanee o consultare promemoria senza rischiare che appaiano durante 
+  condivisioni dello schermo. Include i pulsanti "Pulisci Note" e "Salva su File".
+
+- OPZIONI FINESTRA:
+  * Casella "Sempre in primo piano": mantiene la finestra sopra tutte le altre 
+    applicazioni mentre lavori su altri programmi.
+  * Slider "Opacita'": regola la trasparenza della finestra (dal 30% al 100%).
+
+================================================================================
+3. CONTESTO TECNICO (COME FUNZIONA SOTTO IL COFANO)
+================================================================================
+A partire da Windows 10 (versione 2004) e su Windows 11, Microsoft ha introdotto 
+un flag avanzato per l'API grafica Win32:
+
+    SetWindowDisplayAffinity(HWND hWnd, DWORD dwAffinity);
+
+I valori supportati sono:
+- WDA_NONE (0x00000000): Comportamento standard, la finestra viene catturata.
+- WDA_EXCLUDEFROMCAPTURE (0x00000011): Ordina al Desktop Window Manager (DWM) 
+  di Windows di non inserire i pixel di questa finestra nel buffer di composizione 
+  usato dalle API di cattura (DirectX Desktop Duplication, BitBlt, Windows Graphics Capture).
+
+Poiche' il Desktop Window Manager gestisce la composizione a livello di scheda video, 
+la finestra viene esclusa a monte dalla registrazione senza sovraccaricare la CPU.
+
+================================================================================
+4. DIFFERENZE RISPETTO A TOOL DI DLL INJECTION (es. HideMyWindows)
+================================================================================
+La regola di sicurezza di Windows impone che solo il processo che possiede una 
+finestra puo' impostare la sua DisplayAffinity.
+
+Software terzi come "HideMyWindows" tentano di nascondere finestre di altri processi 
+iniettando una DLL remota con CreateRemoteThread.
+Questo approccio comporta gravi svantaggi:
+- Gli antivirus (Windows Defender, EDR) rilevano l'iniezione come minaccia (Trojan).
+- Provoca frequenti crash in applicazioni complesse.
+- Gli anti-cheat dei videogiochi (Vanguard, EAC, BattlEye) bannano l'account.
+
+PrivateViewer e' invece conforme agli standard Windows:
+- Applica l'API nativamente sul proprio handle (this.Handle).
+- Zero iniezioni remote, zero hook in memoria non autorizzati.
+- Zero falsi positivi dall'antivirus e 100% di stabilita'.
+
+================================================================================
+5. CASI D'USO CORRETTI E CONSIGLIATI
+================================================================================
+- Presentazioni aziendali o didattiche: Quando condividi l'intero schermo durante 
+  una riunione (Teams, Meet, Zoom) e vuoi tenere aperti appunti, la scaletta 
+  o messaggi personali sul monitor senza che gli spettatori li vedano.
+- Streaming e dirette (OBS): Visualizzare la chat di moderazione o dati privati 
+  su un unico monitor senza dover usare un secondo schermo dedicato.
+- Condivisione desktop tra colleghi (Discord/Slack): Evitare che notifiche private 
+  o credenziali compaiano per errore nel flusso video condiviso.
+
+================================================================================
+6. LIMITAZIONI IMPORTANTI E CONTESTO DI SICUREZZA (es. VEYON / SCUOLE)
+================================================================================
+E' fondamentale comprendere che questo software NON e' uno strumento di elusione 
+totale e NON rende invisibili nei confronti di software di supervisione e monitoraggio 
+dedicati (come Veyon o sistemi di proctoring/esame):
+
+1. Barra delle applicazioni (Taskbar): L'icona di PrivateViewer e' comunque visibile 
+   nella barra delle applicazioni o nell'area di notifica catturata.
+2. Monitoraggio processi: Software come Veyon permettono al docente di visualizzare 
+   l'elenco di tutti i processi attivi; "PrivateViewer.exe" compare chiaramente.
+3. Movimento del mouse anomalo: L'insegnante o supervisore vedra' il cursore del mouse 
+   muoversi, cliccare e selezionare su un'area che nella sua visuale appare vuota, 
+   generando un comportamento visivo palesemente sospetto.
+4. Regolamenti d'istituto: L'utilizzo di strumenti volti ad aggirare i software di 
+   laboratorio costituisce violazione delle policy informatiche e puo' comportare 
+   sanzioni disciplinari.
+
+================================================================================
+7. COME MODIFICARE O RICOMPILARE IL CODICE
+================================================================================
+Nella cartella e' incluso il codice sorgente completo "PrivateViewer.cs" assieme 
+alle librerie necessarie (Microsoft.Web.WebView2.*).
+
+Per ricompilarlo dopo qualsiasi modifica:
+1. Fai doppio clic su "build.bat".
+2. Il file batch utilizzera' il compilatore C# nativo di Windows (csc.exe) 
+   e generera' istantaneamente il nuovo eseguibile "PrivateViewer.exe".
+================================================================================

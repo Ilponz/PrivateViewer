@@ -1,0 +1,15 @@
+# Visual Studio / Compiler user files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# IDE folders
+.vs/
+.idea/
+.vscode/
+
+# Runtime profile & cache
+WebView2Profile/
+*.tmp
+*.log
