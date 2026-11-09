@@ -1,6 +1,6 @@
 ================================================================================
                          PRIVATEVIEWER - GUIDA COMPLETA
-                  (Chromium Multi-Tab & Stealth Edition)
+                  (Dark Title Bar & Zen Mode Edition v2.3)
 ================================================================================
 
 INDICE DEI CONTENUTI
@@ -15,10 +15,9 @@ INDICE DEI CONTENUTI
 ================================================================================
 1. COS'E' PRIVATEVIEWER
 ================================================================================
-PrivateViewer e' una finestra di utilita' desktop autonoma, invisibile a catture 
-dello schermo e progettata per proteggere appunti, documenti PDF, pagine web e 
-applicazioni cloud (come ChatGPT o WhatsApp Web) dalla registrazione video o da 
-condivisioni schermo involontarie.
+PrivateViewer e' una suite desktop autonoma, invisibile a catture dello schermo e 
+progettata per proteggere appunti, documenti PDF, pagine web e web app (come 
+ChatGPT o WhatsApp Web) dalla registrazione video o da condivisioni schermo.
 
 Quando e' attiva, la finestra e' perfettamente visibile e utilizzabile da chi e' 
 seduto davanti al monitor fisico, ma risulta completamente INVISIBILE a:
@@ -33,121 +32,77 @@ seduto davanti al monitor fisico, ma risulta completamente INVISIBILE a:
 - AVVIO:
   Fai doppio clic su "PrivateViewer.exe".
 
+- BARRA DEL TITOLO NERA NATIVA (DARK TITLE BAR):
+  La barra in alto con il titolo e i pulsanti di riduzione, ingrandimento e 
+  chiusura [X] e' ora completamente nera con scritte bianche, perfettamente 
+  integrata con il tema scuro dell'applicazione.
+
+- MODALITA' FOCUS / NASCONDI MENU (ZEN MODE):
+  * Clicca su "▲ Nascondi Menu" oppure usa la scorciatoia da tastiera [Ctrl + M] 
+    (o il tasto [F1]) per nascondere all'istante le barre dei comandi superiori 
+    e visualizzare SOLO le schede e le pagine web.
+  * Quando i menu sono nascosti, una sottile barra superiore mostra il tasto 
+    "▼ Mostra Menu (Ctrl+M)" per ripristinare i menu in qualsiasi momento.
+  * Premendo [F11] si attiva la modalita' a Schermo Intero totale senza bordi.
+
 - MODALITA' STEALTH (INVISIBILE NELLA BARRA DELLE APPLICAZIONI):
-  Di default, l'applicazione NON compare nella barra delle applicazioni di Windows 
-  in basso ("👻 Invisibile in Barra"). In questo modo non lascia icone o etichette 
-  visibili sulla barra.
-  Puoi disattivare questa modalita' deselezionando la casella in alto.
+  Di default, l'applicazione NON compare nella barra delle applicazioni in basso 
+  ("👻 Stealth").
+  L'icona dello scudo nella System Tray permette di ripristinare la finestra con 
+  un clic sinistro o di aprire il menu contestuale con il clic destro.
 
 - SISTEMA A SCHEDE MULTIPLE (MULTI-TAB BROWSER):
-  * Clicca su "➕ Nuova Scheda" oppure usa la scorciatoia da tastiera [Ctrl + T] 
-    per aprire una nuova pagina indipendente.
-  * Chiudi la scheda corrente cliccando su [✕] o premendo [Ctrl + W].
-  * Naviga tra le schede aperte con [Ctrl + Tab].
-  * Ciascuna scheda ha i propri controlli di navigazione (Indietro, Avanti, 
-    Ricarica/Stop, Home, URL intelligente).
-  * Il titolo di ogni scheda si adatta automaticamente al sito web visitato.
+  * Clicca su "➕ Scheda" oppure usa [Ctrl + T] per una nuova scheda.
+  * Chiudi la scheda corrente con [✕] o con [Ctrl + W].
+  * Naviga tra le schede con [Ctrl + Tab].
+  * Barra URL dinamica al 100% che si adatta a qualsiasi dimensione della finestra.
 
 - VISUALIZZATORE PDF E DOCUMENTI:
-  * Clicca su "📂 Apri PDF / File" per selezionare qualsiasi documento PDF, 
-    immagine o pagina HTML salvata sul computer e visualizzarla protetta.
-  * Puoi anche semplicemente TRASCINARE (Drag-and-Drop) un file PDF dentro la 
-    finestra per aprirlo istantaneamente in una nuova scheda.
+  * Clicca su "📂 File / PDF" per selezionare qualsiasi documento PDF o immagine.
+  * Oppure trascina semplicemente il file PDF dentro la finestra (Drag-and-Drop).
 
-- MENU WEB APPS RAPIDE ("🚀 Web Apps ▾"):
-  Pulsante per aprire con un clic in schede dedicate:
-  * ChatGPT
-  * Google Gemini
-  * WhatsApp Web & Telegram Web
-  * Wikipedia & Google Traduttore
-  * Calcolatrice Scientifica online (Desmos)
-  * Google Docs
+- MENU WEB APPS RAPIDE:
+  Pulsanti diretti a 1 clic per ChatGPT, Gemini, WhatsApp Web e menu a tendina 
+  per Telegram Web, Wikipedia, Calcolatrice Scientifica e Google Traduttore.
 
 - BOSS KEY RAPIDO GLOBALE (Tasto ESC):
   Premendo [ESC] la finestra scompare all'istante nascondendosi nell'area 
-  di notifica di Windows (System Tray in basso a destra, icona a scudo).
-  Il tasto [ESC] viene intercettato ovunque ti trovi (anche dentro le pagine web).
-  Per ripristinarla, fai clic sull'icona dello scudo nella barra di sistema.
-
-- NOTE PRIVATE (Scheda 1):
-  Un editor di testo integrato per scrivere appunti sensibili o consultare 
-  promemoria. Include i pulsanti "Pulisci Note" e "Salva su File".
-
-- OPZIONI FINESTRA:
-  * Casella "Sempre in primo piano": mantiene la finestra sopra tutte le altre.
-  * Slider "Opacita'": regola la trasparenza della finestra (dal 30% al 100%).
+  di notifica di Windows (System Tray).
 
 ================================================================================
 3. CONTESTO TECNICO (COME FUNZIONA SOTTO IL COFANO)
 ================================================================================
 A partire da Windows 10 (versione 2004) e su Windows 11, Microsoft ha introdotto 
-un flag avanzato per l'API grafica Win32:
+il flag Win32:
 
     SetWindowDisplayAffinity(HWND hWnd, DWORD dwAffinity);
+    // WDA_EXCLUDEFROMCAPTURE = 0x00000011
 
-I valori supportati sono:
-- WDA_NONE (0x00000000): Comportamento standard, la finestra viene catturata.
-- WDA_EXCLUDEFROMCAPTURE (0x00000011): Ordina al Desktop Window Manager (DWM) 
-  di Windows di non inserire i pixel di questa finestra nel buffer di composizione 
-  usato dalle API di cattura (DirectX Desktop Duplication, BitBlt, Windows Graphics Capture).
+Inoltre, per la barra del titolo scura viene utilizzata l'API DWM nativa:
 
-Inoltre, impostando "ShowInTaskbar = false", l'applicazione viene rimossa dal 
-registro delle finestre di primo piano gestite dalla shell della barra delle 
-applicazioni di Windows.
+    DwmSetWindowAttribute(hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, ref 1, 4);
+    DwmSetWindowAttribute(hWnd, DWMWA_CAPTION_COLOR, ref 0x00141414, 4);
 
 ================================================================================
 4. DIFFERENZE RISPETTO A TOOL DI DLL INJECTION (es. HideMyWindows)
 ================================================================================
-La regola di sicurezza di Windows impone che solo il processo che possiede una 
-finestra puo' impostare la sua DisplayAffinity.
-
-Software terzi come "HideMyWindows" tentano di nascondere finestre di altri processi 
-iniettando una DLL remota con CreateRemoteThread.
-Questo approccio comporta gravi svantaggi:
-- Gli antivirus (Windows Defender, EDR) rilevano l'iniezione come minaccia (Trojan).
-- Provoca frequenti crash in applicazioni complesse.
-- Gli anti-cheat dei videogiochi (Vanguard, EAC, BattlEye) bannano l'account.
-
-PrivateViewer e' invece conforme agli standard Windows:
-- Applica l'API nativamente sul proprio handle (this.Handle).
-- Zero iniezioni remote, zero hook in memoria non autorizzati.
-- Zero falsi positivi dall'antivirus e 100% di stabilita'.
+Nessuna iniezione di codice, zero minacce antivirus, 100% conforme alle API Windows.
 
 ================================================================================
 5. CASI D'USO CORRETTI E CONSIGLIATI
 ================================================================================
-- Presentazioni aziendali o didattiche: Quando condividi l'intero schermo durante 
-  una riunione (Teams, Meet, Zoom) e vuoi tenere aperti appunti, la scaletta 
-  o messaggi personali sul monitor senza che gli spettatori li vedano.
-- Streaming e dirette (OBS): Visualizzare la chat di moderazione, PDF di scalette, 
-  o web app private su un unico monitor senza dover usare un secondo schermo.
-- Condivisione desktop tra colleghi (Discord/Slack): Evitare che notifiche private 
-  o credenziali compaiano per errore nel flusso video condiviso.
+Presentazioni in call (Teams/Meet/Zoom), streaming OBS senza secondo monitor, 
+consultazione protetta di documenti e appunti durante condivisioni desktop.
 
 ================================================================================
 6. LIMITAZIONI IMPORTANTI E CONTESTO DI SICUREZZA (es. VEYON / SCUOLE)
 ================================================================================
-E' fondamentale comprendere che questo software NON e' uno strumento di elusione 
-totale e NON rende invisibili nei confronti di software di supervisione e monitoraggio 
-dedicati (come Veyon o sistemi di proctoring/esame):
-
-1. Monitoraggio processi: Software come Veyon permettono al docente di visualizzare 
-   l'elenco di tutti i processi attivi; "PrivateViewer.exe" compare chiaramente.
-2. Movimento del mouse anomalo: L'insegnante o supervisore vedra' il cursore del mouse 
-   muoversi, cliccare e selezionare su un'area che nella sua visuale appare vuota, 
-   generando un comportamento visivo palesemente sospetto.
-3. Regolamenti d'istituto: L'utilizzo di strumenti volti ad aggirare i software di 
-   laboratorio costituisce violazione delle policy informatiche e puo' comportare 
-   sanzioni disciplinari.
+Il software non maschera i processi nel Task Manager/Veyon Process List ne' il 
+movimento del cursore del mouse. Non utilizzare per eludere controlli scolastici.
 
 ================================================================================
 7. COME MODIFICARE O RICOMPILARE IL CODICE
 ================================================================================
-Nella cartella e' incluso il codice sorgente completo "PrivateViewer.cs" assieme 
-alle librerie necessarie (Microsoft.Web.WebView2.*).
-
-Per ricompilarlo dopo qualsiasi modifica:
-1. Fai doppio clic su "build.bat".
-2. Il file batch utilizzera' il compilatore C# nativo di Windows (csc.exe) 
-   e generera' istantaneamente il nuovo eseguibile "PrivateViewer.exe".
+Fai doppio clic su "build.bat" per ricompilare istantaneamente con il compilatore 
+C# nativo di Windows (csc.exe).
 ================================================================================

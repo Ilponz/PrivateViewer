@@ -1,4 +1,4 @@
-# 🛡️ PrivateViewer (Chromium Multi-Tab & Stealth Edition)
+# 🛡️ PrivateViewer (Dark Title Bar & Zen Mode Edition)
 
 [![Author](https://img.shields.io/badge/Author-Alex%20Ponzin%20(%40Ilponz)-blue.svg)](https://github.com/Ilponz)
 [![License](https://img.shields.io/badge/License-Proprietary%20Attribution-red.svg)](https://github.com/Ilponz/PrivateViewer/blob/main/LICENSE)
@@ -29,43 +29,30 @@ private static extern bool SetWindowDisplayAffinity(IntPtr hWnd, uint dwAffinity
 SetWindowDisplayAffinity(this.Handle, 0x00000011);
 ```
 
-### Risultato:
-* **Sul tuo monitor:** La finestra è completamente visibile, reattiva e utilizzabile normalmente.
-* **Nei software di cattura e registrazione:** La finestra non viene disegnata o viene completamente esclusa dal Desktop Window Manager (DWM), mostrando solo lo sfondo o le finestre sottostanti.
-
 ---
 
-## ✨ Funzionalità Avanzate
+## ✨ Nuove Funzionalità v2.3
 
-1. **Protezione Schermo Istantanea:** Attiva di default all'avvio con pulsante di stato per commutare (Attivo / Disattivo) e verificare il funzionamento.
-2. **👻 Modalità Stealth (Invisibile nella Barra delle Applicazioni):**
+1. **🖤 Barra del Titolo Nativa Nera (Dark Title Bar):**
+   * Tramite l'API nativa DWM di Windows (`DwmSetWindowAttribute`), la barra superiore del titolo con il nome della finestra e i tasti di riduzione, ingrandimento e chiusura (`✕`) è ora **completamente nera** con testo bianco, eliminando la fastidiosa barra chiara standard di Windows.
+2. **👁️ Modalità Focus / Nascondi Menu (Zen Mode):**
+   * Premi il pulsante **`▲ Nascondi Menu`** o la scorciatoia **`Ctrl + M`** (oppure `F1`) per collassare tutte le barre superiori e visualizzare **solo le schede e le pagine web a tutto schermo**.
+   * Quando il menu è nascosto, appare una discreta mini-barra con il pulsante **`▼ Mostra Menu (Ctrl+M)`** per riaprirlo con un clic.
+3. **🖥️ Modalità Schermo Intero Immersiva (`F11`):**
+   * Premi **`F11`** per passare alla modalità senza bordi a schermo intero (Zero distrazioni).
+4. **👻 Modalità Stealth (Invisibile nella Barra delle Applicazioni):**
    * L'applicazione non compare nella barra delle applicazioni di Windows in basso.
-   * Rimane controllabile a schermo e tramite l'icona protetta nella System Tray (area di notifica).
-   * Possibilità di attivare/disattivare la visibilità in barra con l'interruttore rapido in alto.
-3. **📑 Browser Multi-Scheda Completo (Multi-Tab Chromium):**
-   * Apri schede multiple contemporaneamente con il pulsante **`➕ Nuova Scheda`** o la scorciatoia **`Ctrl + T`**.
-   * Chiudi la scheda corrente con **`✕`** o **`Ctrl + W`**.
-   * Naviga tra le schede con **`Ctrl + Tab`**.
-   * Ogni scheda ha la sua barra di navigazione indipendente (Indietro, Avanti, Ricarica/Stop, Home, URL intelligente).
-   * I titoli delle schede si sincronizzano automaticamente con le pagine web aperte.
-4. **📂 Visualizzatore Documenti PDF & File Locali:**
-   * Apri file PDF, immagini, file HTML o note di testo tramite il pulsante **`📂 Apri PDF / File`**.
-   * Supporto **Drag-and-Drop**: trascina direttamente qualsiasi file PDF o immagine dentro la finestra per aprirlo in una nuova scheda protetta.
-5. **🚀 Centro Web Apps con 1 Clic:**
-   * Menu rapido per avviare in schede dedicate:
-     * 🤖 **ChatGPT**
-     * 🧠 **Google Gemini**
-     * 💬 **WhatsApp Web**
-     * ✈️ **Telegram Web**
-     * 📖 **Wikipedia**
-     * 🧮 **Calcolatrice Scientifica**
-     * 🌐 **Google Traduttore**
-     * 📄 **Google Docs**
-6. **Boss Key Globale (`ESC`):** Premendo `ESC` la finestra scompare all'istante nascondendosi nell'area di notifica (System Tray). Il tasto `ESC` viene intercettato anche quando il focus è dentro la pagina web o su un campo di input. Cliccando sull'icona dello scudo nella barra di sistema la finestra viene ripristinata.
-7. **Note Private:** Scheda dedicata per appunti, testi o credenziali con salvataggio su file e pulizia.
-8. **Opzioni Finestra:**
-   * *Sempre in primo piano:* Mantiene il visualizzatore sopra le altre finestre di lavoro.
-   * *Controllo Opacità:* Slider per regolare la trasparenza dal 30% al 100%.
+   * Icona Tray (scudo) affidabile al 100% per ripristinare/nascondere la finestra (click sinistro) o aprire il menu contestuale (click destro).
+5. **📑 Browser Multi-Scheda Completo (Multi-Tab Chromium):**
+   * Nuova Scheda: **`➕ Scheda`** o **`Ctrl + T`**.
+   * Chiudi Scheda: **`✕`** o **`Ctrl + W`**.
+   * Scheda successiva: **`Ctrl + Tab`**.
+   * Layout responsive al 100%: si adatta a qualsiasi dimensione senza sovrapposizioni.
+6. **📂 Visualizzatore Documenti PDF & File Locali:**
+   * Apri file PDF o immagini dal pulsante dedicato o semplicemente trascinandoli dentro la finestra (Drag-and-Drop).
+7. **🚀 Centro Web Apps con 1 Clic:**
+   * Pulsanti rapidi per **ChatGPT**, **Gemini**, **WhatsApp Web**, **Telegram**, **Wikipedia**, **Calcolatrice**, ecc.
+8. **Boss Key Globale (`ESC`):** Nasconde la finestra istantaneamente nella barra di sistema.
 
 ---
 
