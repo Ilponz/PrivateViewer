@@ -12,14 +12,14 @@ using Microsoft.Web.WebView2.WinForms;
 // ==============================================================================
 // METADATI UFFICIALI E FIRMA INDELEBILE DELL'AUTORE (Proprietà file .EXE Windows)
 // ==============================================================================
-[assembly: AssemblyTitle("PrivateViewer (Chromium Multi-Tab & WebApps Suite)")]
+[assembly: AssemblyTitle("PrivateViewer (Chromium Multi-Tab & Responsive Edition)")]
 [assembly: AssemblyDescription("Created by Alex Ponzin (@Ilponz) - Anti-Capture Multi-Tab Protected Workspace")]
 [assembly: AssemblyCompany("Alex Ponzin (Ilponz)")]
 [assembly: AssemblyProduct("PrivateViewer")]
 [assembly: AssemblyCopyright("Copyright © 2026 Alex Ponzin (@Ilponz). All rights reserved.")]
 [assembly: AssemblyTrademark("Original Software by Alex Ponzin")]
-[assembly: AssemblyVersion("2.1.0.0")]
-[assembly: AssemblyFileVersion("2.1.0.0")]
+[assembly: AssemblyVersion("2.2.0.0")]
+[assembly: AssemblyFileVersion("2.2.0.0")]
 
 namespace PrivateViewerApp
 {
@@ -35,18 +35,30 @@ namespace PrivateViewerApp
         private const uint WDA_EXCLUDEFROMCAPTURE = 0x00000011;
         private const int WM_KEYDOWN = 0x0100;
 
+        private const int SW_HIDE = 0;
+        private const int SW_SHOWNORMAL = 1;
+        private const int SW_SHOW = 5;
+        private const int SW_RESTORE = 9;
+
         [DllImport("user32.dll", SetLastError = true)]
         private static extern bool SetWindowDisplayAffinity(IntPtr hWnd, uint dwAffinity);
 
         [DllImport("user32.dll", SetLastError = true)]
         private static extern bool GetWindowDisplayAffinity(IntPtr hWnd, out uint pdwAffinity);
 
+        [DllImport("user32.dll")]
+        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+        [DllImport("user32.dll")]
+        private static extern bool SetForegroundWindow(IntPtr hWnd);
+
         // Core WebView2 Shared Environment
         private static CoreWebView2Environment sharedEnv;
 
-        // Top Control Panels
+        // Top Control Panels (Responsive)
+        private Panel topContainer;
         private Panel topPanel;
-        private Panel quickBar;
+        private FlowLayoutPanel flowTopLeft;
         private Label lblTitle;
         private Button btnToggleAffinity;
         private CheckBox chkAlwaysOnTop;
@@ -55,7 +67,8 @@ namespace PrivateViewerApp
         private TrackBar tbOpacity;
         private Label lblOpacity;
 
-        // Quick Tools Buttons
+        // Quick Tools Buttons (Responsive Flow)
+        private FlowLayoutPanel quickBar;
         private Button btnNewTab;
         private Button btnOpenFile;
         private Button btnChatGPT;
@@ -63,9 +76,8 @@ namespace PrivateViewerApp
         private Button btnWhatsApp;
         private Button btnWebApps;
         private ContextMenuStrip menuWebApps;
-        private Label lblShortcuts;
 
-        // Bottom Watermark Panel (Indelebile)
+        // Bottom Watermark Panel (Indelebile & Responsive)
         private Panel bottomPanel;
         private Label lblFooterStatus;
         private LinkLabel lnkWatermark;
@@ -76,9 +88,10 @@ namespace PrivateViewerApp
         private TextBox txtNotes;
         private int tabCounter = 1;
 
-        // Tooltip & State
+        // Tooltip & Tray
         private ToolTip toolTip;
         private NotifyIcon trayIcon;
+        private ContextMenuStrip trayMenu;
         private bool isProtected = true;
 
         [STAThread]
@@ -96,9 +109,9 @@ namespace PrivateViewerApp
 
         private void InitializeComponent()
         {
-            this.Text = "PrivateViewer (Multi-Tab & WebApps Suite) - by Alex Ponzin (@Ilponz)";
-            this.Size = new Size(1100, 720);
-            this.MinimumSize = new Size(800, 500);
+            this.Text = "PrivateViewer - by Alex Ponzin (@Ilponz)";
+            this.Size = new Size(1000, 680);
+            this.MinimumSize = new Size(540, 360);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = Color.FromArgb(30, 30, 30);
             this.ForeColor = Color.White;
@@ -110,64 +123,32 @@ namespace PrivateViewerApp
 
             toolTip = new ToolTip();
             toolTip.AutoPopDelay = 4000;
-            toolTip.InitialDelay = 500;
+            toolTip.InitialDelay = 400;
 
-            // Installa message filter globale per garantire che la Boss Key (ESC) e Ctrl+T/W funzionino sempre
+            // Installa message filter globale per Boss Key (ESC) e Ctrl+T/W
             Application.AddMessageFilter(this);
 
+            // Setup Tray Icon & Context Menu
+            SetupTrayIcon();
+
             // ==========================================
-            // 1. Barra Superiore: Impostazioni & Stealth
+            // CONTENITORE SUPERIORE (Top Container)
             // ==========================================
+            topContainer = new Panel();
+            topContainer.Dock = DockStyle.Top;
+            topContainer.AutoSize = true;
+            topContainer.BackColor = Color.FromArgb(35, 35, 35);
+
+            // 1. Barra Impostazioni & Stealth
             topPanel = new Panel();
             topPanel.Dock = DockStyle.Top;
-            topPanel.Height = 46;
+            topPanel.Height = 44;
             topPanel.BackColor = Color.FromArgb(40, 40, 40);
-            topPanel.Padding = new Padding(10, 6, 10, 6);
+            topPanel.Padding = new Padding(6, 4, 6, 4);
 
-            lblTitle = new Label();
-            lblTitle.Text = "🛡️ PrivateViewer";
-            lblTitle.Font = new Font("Segoe UI", 11, FontStyle.Bold);
-            lblTitle.ForeColor = Color.White;
-            lblTitle.AutoSize = true;
-            lblTitle.Location = new Point(12, 12);
-
-            btnToggleAffinity = new Button();
-            btnToggleAffinity.Text = "🛡️ Invisibile a Cattura: ATTIVO";
-            btnToggleAffinity.BackColor = Color.FromArgb(34, 139, 34);
-            btnToggleAffinity.ForeColor = Color.White;
-            btnToggleAffinity.FlatStyle = FlatStyle.Flat;
-            btnToggleAffinity.FlatAppearance.BorderSize = 0;
-            btnToggleAffinity.Font = new Font("Segoe UI", 9, FontStyle.Bold);
-            btnToggleAffinity.Size = new Size(220, 30);
-            btnToggleAffinity.Location = new Point(165, 8);
-            btnToggleAffinity.Cursor = Cursors.Hand;
-            btnToggleAffinity.Click += BtnToggleAffinity_Click;
-            toolTip.SetToolTip(btnToggleAffinity, "Attiva o disattiva la protezione da registrazione e screenshot");
-
-            chkAlwaysOnTop = new CheckBox();
-            chkAlwaysOnTop.Text = "Sempre in primo piano";
-            chkAlwaysOnTop.ForeColor = Color.LightGray;
-            chkAlwaysOnTop.Font = new Font("Segoe UI", 9);
-            chkAlwaysOnTop.AutoSize = true;
-            chkAlwaysOnTop.Location = new Point(400, 13);
-            chkAlwaysOnTop.CheckedChanged += (s, e) => { this.TopMost = chkAlwaysOnTop.Checked; };
-
-            chkHideTaskbar = new CheckBox();
-            chkHideTaskbar.Text = "👻 Invisibile in Barra";
-            chkHideTaskbar.ForeColor = Color.YellowGreen;
-            chkHideTaskbar.Font = new Font("Segoe UI", 9, FontStyle.Bold);
-            chkHideTaskbar.AutoSize = true;
-            chkHideTaskbar.Checked = true;
-            chkHideTaskbar.Location = new Point(570, 13);
-            chkHideTaskbar.CheckedChanged += (s, e) => {
-                this.ShowInTaskbar = !chkHideTaskbar.Checked;
-            };
-            toolTip.SetToolTip(chkHideTaskbar, "Se attivo, il programma scompare completamente dalla barra delle applicazioni di Windows");
-
-            // Pannello Opacità ancorato a destra in modo stabile
             pnlOpacity = new Panel();
             pnlOpacity.Dock = DockStyle.Right;
-            pnlOpacity.Width = 190;
+            pnlOpacity.Width = 175;
             pnlOpacity.BackColor = Color.Transparent;
 
             lblOpacity = new Label();
@@ -175,95 +156,104 @@ namespace PrivateViewerApp
             lblOpacity.ForeColor = Color.LightGray;
             lblOpacity.Font = new Font("Segoe UI", 9);
             lblOpacity.AutoSize = true;
-            lblOpacity.Location = new Point(10, 13);
+            lblOpacity.Location = new Point(4, 12);
 
             tbOpacity = new TrackBar();
             tbOpacity.Minimum = 30;
             tbOpacity.Maximum = 100;
             tbOpacity.Value = 100;
             tbOpacity.TickStyle = TickStyle.None;
-            tbOpacity.Size = new Size(110, 30);
-            tbOpacity.Location = new Point(70, 9);
+            tbOpacity.Size = new Size(105, 30);
+            tbOpacity.Location = new Point(62, 8);
             tbOpacity.Scroll += (s, e) => { this.Opacity = tbOpacity.Value / 100.0; };
 
             pnlOpacity.Controls.Add(lblOpacity);
             pnlOpacity.Controls.Add(tbOpacity);
 
-            topPanel.Controls.Add(lblTitle);
-            topPanel.Controls.Add(btnToggleAffinity);
-            topPanel.Controls.Add(chkAlwaysOnTop);
-            topPanel.Controls.Add(chkHideTaskbar);
+            flowTopLeft = new FlowLayoutPanel();
+            flowTopLeft.Dock = DockStyle.Fill;
+            flowTopLeft.WrapContents = false;
+            flowTopLeft.AutoScroll = false;
+            flowTopLeft.Padding = new Padding(2);
+            flowTopLeft.BackColor = Color.Transparent;
+
+            lblTitle = new Label();
+            lblTitle.Text = "🛡️ PrivateViewer";
+            lblTitle.Font = new Font("Segoe UI", 10.5f, FontStyle.Bold);
+            lblTitle.ForeColor = Color.White;
+            lblTitle.AutoSize = true;
+            lblTitle.Margin = new Padding(4, 8, 8, 4);
+
+            btnToggleAffinity = new Button();
+            btnToggleAffinity.Text = "🛡️ Protetto da Cattura";
+            btnToggleAffinity.BackColor = Color.FromArgb(34, 139, 34);
+            btnToggleAffinity.ForeColor = Color.White;
+            btnToggleAffinity.FlatStyle = FlatStyle.Flat;
+            btnToggleAffinity.FlatAppearance.BorderSize = 0;
+            btnToggleAffinity.Font = new Font("Segoe UI", 9, FontStyle.Bold);
+            btnToggleAffinity.Size = new Size(170, 28);
+            btnToggleAffinity.Margin = new Padding(4, 4, 8, 4);
+            btnToggleAffinity.Cursor = Cursors.Hand;
+            btnToggleAffinity.Click += BtnToggleAffinity_Click;
+            toolTip.SetToolTip(btnToggleAffinity, "Attiva o disattiva la protezione da registrazione e screenshot");
+
+            chkAlwaysOnTop = new CheckBox();
+            chkAlwaysOnTop.Text = "Sempre in primo";
+            chkAlwaysOnTop.ForeColor = Color.LightGray;
+            chkAlwaysOnTop.Font = new Font("Segoe UI", 9);
+            chkAlwaysOnTop.AutoSize = true;
+            chkAlwaysOnTop.Margin = new Padding(4, 8, 8, 4);
+            chkAlwaysOnTop.CheckedChanged += (s, e) => { this.TopMost = chkAlwaysOnTop.Checked; };
+
+            chkHideTaskbar = new CheckBox();
+            chkHideTaskbar.Text = "👻 Stealth";
+            chkHideTaskbar.ForeColor = Color.YellowGreen;
+            chkHideTaskbar.Font = new Font("Segoe UI", 9, FontStyle.Bold);
+            chkHideTaskbar.AutoSize = true;
+            chkHideTaskbar.Checked = true;
+            chkHideTaskbar.Margin = new Padding(4, 8, 8, 4);
+            chkHideTaskbar.CheckedChanged += (s, e) => {
+                this.ShowInTaskbar = !chkHideTaskbar.Checked;
+            };
+            toolTip.SetToolTip(chkHideTaskbar, "Invisibile nella barra delle applicazioni di Windows (raggiungibile dalla System Tray)");
+
+            flowTopLeft.Controls.Add(lblTitle);
+            flowTopLeft.Controls.Add(btnToggleAffinity);
+            flowTopLeft.Controls.Add(chkAlwaysOnTop);
+            flowTopLeft.Controls.Add(chkHideTaskbar);
+
+            topPanel.Controls.Add(flowTopLeft);
             topPanel.Controls.Add(pnlOpacity);
 
-            // ==========================================
-            // 2. Barra Rapida: Nuova Scheda, File, Web Apps
-            // ==========================================
-            quickBar = new Panel();
+            // 2. Barra Rapida: Nuova Scheda, File, Web Apps (Auto-Wrap Flow)
+            quickBar = new FlowLayoutPanel();
             quickBar.Dock = DockStyle.Top;
-            quickBar.Height = 40;
+            quickBar.AutoSize = true;
+            quickBar.WrapContents = true;
             quickBar.BackColor = Color.FromArgb(28, 28, 28);
-            quickBar.Padding = new Padding(8, 5, 8, 5);
+            quickBar.Padding = new Padding(6, 4, 6, 4);
 
-            btnNewTab = new Button();
-            btnNewTab.Text = "➕ Nuova Scheda";
-            btnNewTab.Font = new Font("Segoe UI", 9, FontStyle.Bold);
-            btnNewTab.FlatStyle = FlatStyle.Flat;
-            btnNewTab.FlatAppearance.BorderSize = 0;
-            btnNewTab.BackColor = Color.FromArgb(0, 122, 204);
-            btnNewTab.ForeColor = Color.White;
-            btnNewTab.Size = new Size(125, 28);
-            btnNewTab.Location = new Point(8, 6);
-            btnNewTab.Cursor = Cursors.Hand;
+            btnNewTab = CreateToolbarButton("➕ Scheda", 95, 28, Color.FromArgb(0, 122, 204), "Apre una nuova scheda protetta (Ctrl + T)");
             btnNewTab.Click += (s, e) => { AddNewBrowserTab("https://www.google.com"); };
-            toolTip.SetToolTip(btnNewTab, "Apre una nuova scheda del browser protetta (Ctrl + T)");
 
-            btnOpenFile = new Button();
-            btnOpenFile.Text = "📂 Apri PDF / File";
-            btnOpenFile.Font = new Font("Segoe UI", 9);
-            btnOpenFile.FlatStyle = FlatStyle.Flat;
-            btnOpenFile.FlatAppearance.BorderSize = 0;
-            btnOpenFile.BackColor = Color.FromArgb(55, 55, 55);
-            btnOpenFile.ForeColor = Color.White;
-            btnOpenFile.Size = new Size(120, 28);
-            btnOpenFile.Location = new Point(140, 6);
-            btnOpenFile.Cursor = Cursors.Hand;
+            btnOpenFile = CreateToolbarButton("📂 File / PDF", 100, 28, Color.FromArgb(55, 55, 55), "Apri un PDF o file locale in modalità protetta");
             btnOpenFile.Click += BtnOpenFile_Click;
-            toolTip.SetToolTip(btnOpenFile, "Visualizza un documento PDF, pagina HTML o immagine in modalità protetta");
 
-            // Web Apps Dirette a 1 clic
-            btnChatGPT = CreateQuickAppButton("🤖 ChatGPT", 268, 6, 105, 28, Color.FromArgb(16, 140, 110), "https://chatgpt.com", "Avvia ChatGPT in una scheda protetta");
-            btnGemini = CreateQuickAppButton("🧠 Gemini", 380, 6, 95, 28, Color.FromArgb(70, 70, 130), "https://gemini.google.com", "Avvia Google Gemini in una scheda protetta");
-            btnWhatsApp = CreateQuickAppButton("💬 WhatsApp", 482, 6, 110, 28, Color.FromArgb(30, 135, 70), "https://web.whatsapp.com", "Avvia WhatsApp Web in una scheda protetta");
+            btnChatGPT = CreateToolbarButton("🤖 ChatGPT", 95, 28, Color.FromArgb(16, 140, 110), "Avvia ChatGPT in una nuova scheda");
+            btnChatGPT.Click += (s, e) => { AddNewBrowserTab("https://chatgpt.com"); };
 
-            btnWebApps = new Button();
-            btnWebApps.Text = "🚀 Altre App ▾";
-            btnWebApps.Font = new Font("Segoe UI", 9);
-            btnWebApps.FlatStyle = FlatStyle.Flat;
-            btnWebApps.FlatAppearance.BorderSize = 0;
-            btnWebApps.BackColor = Color.FromArgb(55, 55, 55);
-            btnWebApps.ForeColor = Color.White;
-            btnWebApps.Size = new Size(115, 28);
-            btnWebApps.Location = new Point(600, 6);
-            btnWebApps.Cursor = Cursors.Hand;
+            btnGemini = CreateToolbarButton("🧠 Gemini", 85, 28, Color.FromArgb(70, 70, 130), "Avvia Google Gemini");
+            btnGemini.Click += (s, e) => { AddNewBrowserTab("https://gemini.google.com"); };
+
+            btnWhatsApp = CreateToolbarButton("💬 WhatsApp", 95, 28, Color.FromArgb(30, 135, 70), "Avvia WhatsApp Web");
+            btnWhatsApp.Click += (s, e) => { AddNewBrowserTab("https://web.whatsapp.com"); };
+
+            btnWebApps = CreateToolbarButton("🚀 Altre App ▾", 105, 28, Color.FromArgb(55, 55, 55), "Telegram, Wikipedia, Calcolatrice, Traduttore, Documenti...");
             btnWebApps.Click += (s, e) => {
                 menuWebApps.Show(btnWebApps, new Point(0, btnWebApps.Height));
             };
-            toolTip.SetToolTip(btnWebApps, "Altre Web Apps: Telegram, Wikipedia, Calcolatrice Scientifica, Traduttore, Google Docs...");
 
             SetupWebAppsMenu();
-
-            Panel pnlShortcuts = new Panel();
-            pnlShortcuts.Dock = DockStyle.Right;
-            pnlShortcuts.Width = 340;
-            pnlShortcuts.BackColor = Color.Transparent;
-
-            lblShortcuts = new Label();
-            lblShortcuts.Text = "Scorciatoie: [Ctrl+T] Scheda | [Ctrl+W] Chiudi | [ESC] Boss Key";
-            lblShortcuts.Font = new Font("Segoe UI", 8.5f);
-            lblShortcuts.ForeColor = Color.DarkGray;
-            lblShortcuts.AutoSize = true;
-            lblShortcuts.Location = new Point(10, 11);
-            pnlShortcuts.Controls.Add(lblShortcuts);
 
             quickBar.Controls.Add(btnNewTab);
             quickBar.Controls.Add(btnOpenFile);
@@ -271,38 +261,39 @@ namespace PrivateViewerApp
             quickBar.Controls.Add(btnGemini);
             quickBar.Controls.Add(btnWhatsApp);
             quickBar.Controls.Add(btnWebApps);
-            quickBar.Controls.Add(pnlShortcuts);
+
+            topContainer.Controls.Add(quickBar);
+            topContainer.Controls.Add(topPanel);
 
             // ==========================================
             // 3. Barra Inferiore Watermark & Autore
             // ==========================================
             bottomPanel = new Panel();
             bottomPanel.Dock = DockStyle.Bottom;
-            bottomPanel.Height = 26;
+            bottomPanel.Height = 24;
             bottomPanel.BackColor = Color.FromArgb(20, 20, 20);
-            bottomPanel.Padding = new Padding(10, 4, 10, 4);
+            bottomPanel.Padding = new Padding(6, 2, 6, 2);
 
             lblFooterStatus = new Label();
-            lblFooterStatus.Text = "🔒 Schermo Protetto | Trascina qui qualsiasi PDF o file per aprirlo";
+            lblFooterStatus.Text = "🔒 Protetto | Trascina PDF o file qui per aprirli";
             lblFooterStatus.Font = new Font("Segoe UI", 8.5f);
             lblFooterStatus.ForeColor = Color.DarkGray;
+            lblFooterStatus.Dock = DockStyle.Left;
             lblFooterStatus.AutoSize = true;
-            lblFooterStatus.Location = new Point(8, 5);
 
             lnkWatermark = new LinkLabel();
-            lnkWatermark.Text = "⚡ Ideato & Sviluppato da Alex Ponzin (@Ilponz) - GitHub";
+            lnkWatermark.Text = "⚡ Ideato da Alex Ponzin (@Ilponz)";
             lnkWatermark.Font = new Font("Segoe UI", 8.5f, FontStyle.Bold);
             lnkWatermark.LinkColor = Color.FromArgb(0, 168, 255);
             lnkWatermark.ActiveLinkColor = Color.DeepSkyBlue;
             lnkWatermark.VisitedLinkColor = Color.FromArgb(0, 168, 255);
+            lnkWatermark.Dock = DockStyle.Right;
             lnkWatermark.AutoSize = true;
-            lnkWatermark.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            lnkWatermark.Location = new Point(bottomPanel.Width - 365, 5);
             lnkWatermark.Cursor = Cursors.Hand;
             lnkWatermark.LinkClicked += (s, e) => {
                 try { Process.Start(REPO_URL); } catch { }
             };
-            toolTip.SetToolTip(lnkWatermark, "Visita il repository ufficiale di Alex Ponzin");
+            toolTip.SetToolTip(lnkWatermark, "Visita il repository ufficiale di Alex Ponzin su GitHub");
 
             bottomPanel.Controls.Add(lblFooterStatus);
             bottomPanel.Controls.Add(lnkWatermark);
@@ -320,25 +311,14 @@ namespace PrivateViewerApp
 
             Panel notesToolbar = new Panel();
             notesToolbar.Dock = DockStyle.Top;
-            notesToolbar.Height = 36;
+            notesToolbar.Height = 34;
             notesToolbar.BackColor = Color.FromArgb(35, 35, 35);
+            notesToolbar.Padding = new Padding(4);
 
-            Button btnClearNotes = new Button();
-            btnClearNotes.Text = "Pulisci Note";
-            btnClearNotes.FlatStyle = FlatStyle.Flat;
-            btnClearNotes.ForeColor = Color.White;
-            btnClearNotes.BackColor = Color.FromArgb(60, 60, 60);
-            btnClearNotes.Size = new Size(100, 26);
-            btnClearNotes.Location = new Point(10, 5);
+            Button btnClearNotes = CreateToolbarButton("Pulisci Note", 90, 26, Color.FromArgb(60, 60, 60), "Cancella gli appunti");
             btnClearNotes.Click += (s, e) => { txtNotes.Clear(); };
 
-            Button btnSaveNotes = new Button();
-            btnSaveNotes.Text = "Salva su File";
-            btnSaveNotes.FlatStyle = FlatStyle.Flat;
-            btnSaveNotes.ForeColor = Color.White;
-            btnSaveNotes.BackColor = Color.FromArgb(60, 60, 60);
-            btnSaveNotes.Size = new Size(100, 26);
-            btnSaveNotes.Location = new Point(120, 5);
+            Button btnSaveNotes = CreateToolbarButton("Salva su File", 95, 26, Color.FromArgb(60, 60, 60), "Salva le note in un file .txt");
             btnSaveNotes.Click += (s, e) => {
                 using (SaveFileDialog sfd = new SaveFileDialog())
                 {
@@ -351,8 +331,8 @@ namespace PrivateViewerApp
                 }
             };
 
-            notesToolbar.Controls.Add(btnClearNotes);
             notesToolbar.Controls.Add(btnSaveNotes);
+            notesToolbar.Controls.Add(btnClearNotes);
 
             txtNotes = new TextBox();
             txtNotes.Multiline = true;
@@ -363,12 +343,12 @@ namespace PrivateViewerApp
             txtNotes.Font = new Font("Consolas", 10);
             txtNotes.BorderStyle = BorderStyle.None;
             txtNotes.Text = "// =============================================================================\r\n" +
-                            "// PrivateViewer (Multi-Tab & WebApps Suite)\r\n" +
+                            "// PrivateViewer (Multi-Tab & Responsive Edition)\r\n" +
                             "// Ideato e creato da: Alex Ponzin (@Ilponz)\r\n" +
-                            "// Repository Ufficiale: https://github.com/Ilponz/PrivateViewer\r\n" +
+                            "// Repository: https://github.com/Ilponz/PrivateViewer\r\n" +
                             "// =============================================================================\r\n" +
                             "// Questa finestra e tutto il suo contenuto sono invisibili a screenshot e stream.\r\n" +
-                            "// Puoi aprire schede multiple con il tasto [+] o premendo Ctrl + T.\r\n\r\n";
+                            "// Premi Ctrl+T per una nuova scheda, o usa i tasti in alto per avviare Web Apps.\r\n\r\n";
 
             tabNotes.Controls.Add(txtNotes);
             tabNotes.Controls.Add(notesToolbar);
@@ -376,28 +356,9 @@ namespace PrivateViewerApp
 
             this.Controls.Add(tabControl);
             this.Controls.Add(bottomPanel);
-            this.Controls.Add(quickBar);
-            this.Controls.Add(topPanel);
+            this.Controls.Add(topContainer);
 
-            // Icona di notifica nella System Tray per "Boss Key"
-            trayIcon = new NotifyIcon();
-            trayIcon.Text = "PrivateViewer - Alex Ponzin (Clicca per mostrare)";
-            trayIcon.Icon = SystemIcons.Shield;
-            trayIcon.Visible = true;
-            trayIcon.Click += (s, e) => {
-                if (this.Visible)
-                {
-                    this.Activate();
-                }
-                else
-                {
-                    this.Show();
-                    this.WindowState = FormWindowState.Normal;
-                    this.Activate();
-                }
-            };
-
-            // Supporto Drag and Drop di file (es. PDF o immagini)
+            // Supporto Drag and Drop di file (PDF o immagini)
             this.DragEnter += (s, e) => {
                 if (e.Data.GetDataPresent(DataFormats.FileDrop))
                     e.Effect = DragDropEffects.Copy;
@@ -423,7 +384,43 @@ namespace PrivateViewerApp
             };
         }
 
-        private Button CreateQuickAppButton(string text, int x, int y, int width, int height, Color backColor, string url, string tip)
+        private void SetupTrayIcon()
+        {
+            trayMenu = new ContextMenuStrip();
+            var itemShow = trayMenu.Items.Add("Mostra PrivateViewer", null, (s, e) => RestoreWindow());
+            itemShow.Font = new Font(trayMenu.Font, FontStyle.Bold);
+            trayMenu.Items.Add("Nascondi nella Tray (Boss Key)", null, (s, e) => HideToTray());
+            trayMenu.Items.Add(new ToolStripSeparator());
+            trayMenu.Items.Add("Nuova Scheda (Ctrl+T)", null, (s, e) => {
+                RestoreWindow();
+                AddNewBrowserTab("https://www.google.com");
+            });
+            trayMenu.Items.Add("Protezione Cattura On/Off", null, (s, e) => ApplyProtection(!isProtected));
+            trayMenu.Items.Add(new ToolStripSeparator());
+            trayMenu.Items.Add("Esci da PrivateViewer", null, (s, e) => {
+                trayIcon.Visible = false;
+                Application.Exit();
+            });
+
+            trayIcon = new NotifyIcon();
+            trayIcon.Text = "PrivateViewer - Alex Ponzin (Clicca per mostrare)";
+            trayIcon.Icon = SystemIcons.Shield;
+            trayIcon.ContextMenuStrip = trayMenu;
+            trayIcon.Visible = true;
+
+            // Click singolo e doppio click ripristinano affidabilmente la finestra
+            trayIcon.Click += (s, e) => {
+                if (e is MouseEventArgs && ((MouseEventArgs)e).Button == MouseButtons.Left)
+                {
+                    ToggleWindowFromTray();
+                }
+            };
+            trayIcon.DoubleClick += (s, e) => {
+                RestoreWindow();
+            };
+        }
+
+        private Button CreateToolbarButton(string text, int width, int height, Color backColor, string tip)
         {
             Button btn = new Button();
             btn.Text = text;
@@ -433,9 +430,8 @@ namespace PrivateViewerApp
             btn.BackColor = backColor;
             btn.ForeColor = Color.White;
             btn.Size = new Size(width, height);
-            btn.Location = new Point(x, y);
+            btn.Margin = new Padding(3, 2, 3, 2);
             btn.Cursor = Cursors.Hand;
-            btn.Click += (s, e) => { AddNewBrowserTab(url); };
             toolTip.SetToolTip(btn, tip);
             return btn;
         }
@@ -480,38 +476,47 @@ namespace PrivateViewerApp
         }
 
         // ==============================================================================
-        // GESTIONE SCHEDE MULTIPLE BROWSER
+        // GESTIONE SCHEDE MULTIPLE BROWSER (RESPONSIVE TABLELAYOUT)
         // ==============================================================================
         public async void AddNewBrowserTab(string initialUrl)
         {
             TabPage tabPage = new TabPage("🌐 Scheda " + tabCounter++);
             tabPage.BackColor = Color.FromArgb(25, 25, 25);
 
-            // Barra di navigazione della scheda
-            Panel browserBar = new Panel();
-            browserBar.Dock = DockStyle.Top;
-            browserBar.Height = 40;
-            browserBar.BackColor = Color.FromArgb(35, 35, 35);
-            browserBar.Padding = new Padding(6);
+            // Barra di navigazione responsive con TableLayoutPanel a larghezza 100% dinamica
+            TableLayoutPanel navTable = new TableLayoutPanel();
+            navTable.Dock = DockStyle.Top;
+            navTable.Height = 36;
+            navTable.BackColor = Color.FromArgb(35, 35, 35);
+            navTable.Padding = new Padding(2);
+            navTable.ColumnCount = 7;
+            navTable.RowCount = 1;
 
-            Button btnBack = CreateNavButton("◀", 8, 6, 32, 28, "Indietro (Alt+Freccia Sinistra)");
+            navTable.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 32)); // Back
+            navTable.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 32)); // Forward
+            navTable.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 32)); // Reload
+            navTable.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 32)); // Home
+            navTable.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100)); // URL Box (100% flessibile)
+            navTable.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 42)); // Go
+            navTable.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 36)); // Close Tab
+
+            Button btnBack = CreateNavButton("◀", "Indietro (Alt+Freccia Sinistra)");
             btnBack.Enabled = false;
 
-            Button btnForward = CreateNavButton("▶", 44, 6, 32, 28, "Avanti (Alt+Freccia Destra)");
+            Button btnForward = CreateNavButton("▶", "Avanti (Alt+Freccia Destra)");
             btnForward.Enabled = false;
 
-            Button btnReload = CreateNavButton("🔄", 80, 6, 32, 28, "Ricarica (F5)");
-            Button btnHome = CreateNavButton("🏠", 116, 6, 32, 28, "Pagina iniziale (Google)");
+            Button btnReload = CreateNavButton("🔄", "Ricarica (F5)");
+            Button btnHome = CreateNavButton("🏠", "Pagina iniziale (Google)");
 
             TextBox txtUrl = new TextBox();
             txtUrl.Text = initialUrl;
             txtUrl.Font = new Font("Segoe UI", 9.5f);
-            txtUrl.Location = new Point(154, 7);
-            txtUrl.Width = browserBar.Width - 268;
-            txtUrl.Anchor = AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right;
+            txtUrl.Dock = DockStyle.Fill;
             txtUrl.BackColor = Color.FromArgb(24, 24, 24);
             txtUrl.ForeColor = Color.White;
             txtUrl.BorderStyle = BorderStyle.FixedSingle;
+            txtUrl.Margin = new Padding(4, 5, 4, 3);
             txtUrl.Click += (s, e) => { txtUrl.SelectAll(); };
 
             Button btnGo = new Button();
@@ -521,9 +526,8 @@ namespace PrivateViewerApp
             btnGo.FlatAppearance.BorderSize = 0;
             btnGo.ForeColor = Color.White;
             btnGo.BackColor = Color.FromArgb(0, 122, 204);
-            btnGo.Size = new Size(46, 28);
-            btnGo.Location = new Point(browserBar.Width - 100, 6);
-            btnGo.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnGo.Dock = DockStyle.Fill;
+            btnGo.Margin = new Padding(2);
             btnGo.Cursor = Cursors.Hand;
             toolTip.SetToolTip(btnGo, "Naviga o cerca su Google (Invio)");
 
@@ -534,19 +538,18 @@ namespace PrivateViewerApp
             btnCloseTab.FlatAppearance.BorderSize = 0;
             btnCloseTab.ForeColor = Color.LightGray;
             btnCloseTab.BackColor = Color.FromArgb(65, 30, 30);
-            btnCloseTab.Size = new Size(36, 28);
-            btnCloseTab.Location = new Point(browserBar.Width - 46, 6);
-            btnCloseTab.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnCloseTab.Dock = DockStyle.Fill;
+            btnCloseTab.Margin = new Padding(2);
             btnCloseTab.Cursor = Cursors.Hand;
             toolTip.SetToolTip(btnCloseTab, "Chiudi questa scheda (Ctrl + W)");
 
-            browserBar.Controls.Add(btnBack);
-            browserBar.Controls.Add(btnForward);
-            browserBar.Controls.Add(btnReload);
-            browserBar.Controls.Add(btnHome);
-            browserBar.Controls.Add(txtUrl);
-            browserBar.Controls.Add(btnGo);
-            browserBar.Controls.Add(btnCloseTab);
+            navTable.Controls.Add(btnBack, 0, 0);
+            navTable.Controls.Add(btnForward, 1, 0);
+            navTable.Controls.Add(btnReload, 2, 0);
+            navTable.Controls.Add(btnHome, 3, 0);
+            navTable.Controls.Add(txtUrl, 4, 0);
+            navTable.Controls.Add(btnGo, 5, 0);
+            navTable.Controls.Add(btnCloseTab, 6, 0);
 
             WebView2 webView = new WebView2();
             webView.Dock = DockStyle.Fill;
@@ -596,7 +599,7 @@ namespace PrivateViewerApp
             btnCloseTab.Click += (s, e) => { CloseBrowserTab(tabPage, webView); };
 
             tabPage.Controls.Add(webView);
-            tabPage.Controls.Add(browserBar);
+            tabPage.Controls.Add(navTable);
             tabControl.TabPages.Add(tabPage);
             tabControl.SelectedTab = tabPage;
 
@@ -632,7 +635,7 @@ namespace PrivateViewerApp
                         string title = webView.CoreWebView2.DocumentTitle;
                         if (!string.IsNullOrWhiteSpace(title))
                         {
-                            if (title.Length > 22) title = title.Substring(0, 19) + "...";
+                            if (title.Length > 20) title = title.Substring(0, 17) + "...";
                             tabPage.Text = "🌐 " + title;
                         }
                     };
@@ -647,13 +650,12 @@ namespace PrivateViewerApp
 
         private void CloseBrowserTab(TabPage tab, WebView2 webView)
         {
-            if (tab == tabNotes) return; // Non chiudere la scheda delle note
+            if (tab == tabNotes) return;
 
             tabControl.TabPages.Remove(tab);
             try { webView.Dispose(); } catch { }
             try { tab.Dispose(); } catch { }
 
-            // Se non ci sono più schede aperte oltre a Note, apri una nuova scheda vuota
             if (tabControl.TabPages.Count == 1)
             {
                 AddNewBrowserTab("https://www.google.com");
@@ -674,7 +676,7 @@ namespace PrivateViewerApp
             }
         }
 
-        private Button CreateNavButton(string text, int x, int y, int width, int height, string tip)
+        private Button CreateNavButton(string text, string tip)
         {
             Button btn = new Button();
             btn.Text = text;
@@ -683,8 +685,8 @@ namespace PrivateViewerApp
             btn.FlatAppearance.BorderSize = 0;
             btn.BackColor = Color.FromArgb(50, 50, 50);
             btn.ForeColor = Color.White;
-            btn.Size = new Size(width, height);
-            btn.Location = new Point(x, y);
+            btn.Dock = DockStyle.Fill;
+            btn.Margin = new Padding(2);
             btn.Cursor = Cursors.Hand;
             toolTip.SetToolTip(btn, tip);
             return btn;
@@ -699,12 +701,12 @@ namespace PrivateViewerApp
                 isProtected = enable;
                 if (enable)
                 {
-                    btnToggleAffinity.Text = "🛡️ Invisibile a Cattura: ATTIVO";
+                    btnToggleAffinity.Text = "🛡️ Protetto da Cattura";
                     btnToggleAffinity.BackColor = Color.FromArgb(34, 139, 34);
                 }
                 else
                 {
-                    btnToggleAffinity.Text = "⚠️ Visibile a Cattura (DISATTIVO)";
+                    btnToggleAffinity.Text = "⚠️ Visibile (Disattivo)";
                     btnToggleAffinity.BackColor = Color.FromArgb(160, 60, 60);
                 }
             }
@@ -720,10 +722,56 @@ namespace PrivateViewerApp
             ApplyProtection(!isProtected);
         }
 
+        // ==============================================================================
+        // GESTIONE RIPRISTINO / VISIBILITÀ DA TRAY ICON (AFFIDABILE AL 100%)
+        // ==============================================================================
+        public void RestoreWindow()
+        {
+            if (!this.Visible)
+            {
+                this.Show();
+            }
+            this.WindowState = FormWindowState.Normal;
+            ShowWindow(this.Handle, SW_RESTORE);
+            ShowWindow(this.Handle, SW_SHOW);
+            SetForegroundWindow(this.Handle);
+            this.BringToFront();
+            this.Activate();
+        }
+
+        private void ToggleWindowFromTray()
+        {
+            if (!this.Visible || this.WindowState == FormWindowState.Minimized)
+            {
+                RestoreWindow();
+            }
+            else
+            {
+                if (Form.ActiveForm == this)
+                {
+                    HideToTray();
+                }
+                else
+                {
+                    RestoreWindow();
+                }
+            }
+        }
+
         private void HideToTray()
         {
             this.Hide();
             trayIcon.Visible = true;
+        }
+
+        protected override void OnResize(EventArgs e)
+        {
+            base.OnResize(e);
+            // Se minimizzato tramite tasto '-', nascondi nella Tray per non rimanere bloccato
+            if (this.WindowState == FormWindowState.Minimized)
+            {
+                this.Hide();
+            }
         }
 
         // ==============================================================================
