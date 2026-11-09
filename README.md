@@ -1,6 +1,19 @@
 # 🛡️ PrivateViewer (Chromium Edition)
 
-Un'applicazione Windows moderna, autonoma e leggera progettata per proteggere finestre, note e navigazione web da qualsiasi metodo di cattura dello schermo (registrazioni video, screenshot, software di condivisione e streaming come OBS, Discord, Teams, Zoom, Meet).
+[![Author](https://img.shields.io/badge/Author-Alex%20Ponzin%20(%40Ilponz)-blue.svg)](https://github.com/Ilponz)
+[![License](https://img.shields.io/badge/License-Proprietary%20Attribution-red.svg)](https://github.com/Ilponz/PrivateViewer/blob/main/LICENSE)
+[![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011-lightgrey.svg)](https://github.com/Ilponz/PrivateViewer)
+
+> **Ideato e sviluppato originariamente da [Alex Ponzin (@Ilponz)](https://github.com/Ilponz)**  
+> *Repository Ufficiale:* [https://github.com/Ilponz/PrivateViewer](https://github.com/Ilponz/PrivateViewer)
+
+---
+
+## ⚡ Autorialità e Watermark
+Questo software include un **watermark indelebile di paternità**:
+* **Nei binari Windows (.exe):** Metadati assembly con firma d'autore, copyright e marchio registrati nelle proprietà del file.
+* **Nell'interfaccia utente:** Barra inferiore con firma attiva e collegamento diretto al profilo GitHub dell'autore originario (`Alex Ponzin`).
+* **Nel codice sorgente:** Intestazioni e costanti con attribuzione inderogabile.
 
 ---
 
@@ -46,3 +59,8 @@ SetWindowDisplayAffinity(this.Handle, 0x00000011);
 
 * **Eseguibile già pronto:** Avvia direttamente `PrivateViewer.exe`.
 * **Ricompilare:** Esegui `build.bat` (utilizza il compilatore nativo `csc.exe` già incluso in Windows e referenzia i moduli WebView2 inclusi).
+
+---
+
+## 📜 Licenza
+Il software è protetto da clausola di attribuzione proprietaria. Leggi il file [LICENSE](https://github.com/Ilponz/PrivateViewer/blob/main/LICENSE) per i dettagli. È vietata la rimozione del watermark e dei crediti d'autore.

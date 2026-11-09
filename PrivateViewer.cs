@@ -1,16 +1,35 @@
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 
+// ==============================================================================
+// METADATI UFFICIALI E FIRMA INDELEBILE DELL'AUTORE (Proprietà file .EXE Windows)
+// ==============================================================================
+[assembly: AssemblyTitle("PrivateViewer (Chromium Edition)")]
+[assembly: AssemblyDescription("Created by Alex Ponzin (@Ilponz) - Anti-Capture Protected Utility")]
+[assembly: AssemblyCompany("Alex Ponzin (Ilponz)")]
+[assembly: AssemblyProduct("PrivateViewer")]
+[assembly: AssemblyCopyright("Copyright © 2026 Alex Ponzin (@Ilponz). All rights reserved.")]
+[assembly: AssemblyTrademark("Original Software by Alex Ponzin")]
+[assembly: AssemblyVersion("1.0.0.0")]
+[assembly: AssemblyFileVersion("1.0.0.0")]
+
 namespace PrivateViewerApp
 {
     public class MainForm : Form, IMessageFilter
     {
+        // Costanti autore
+        public const string AUTHOR_NAME = "Alex Ponzin";
+        public const string AUTHOR_HANDLE = "@Ilponz";
+        public const string REPO_URL = "https://github.com/Ilponz/PrivateViewer";
+
         // Win32 API Constants & Functions
         private const uint WDA_NONE = 0x00000000;
         private const uint WDA_EXCLUDEFROMCAPTURE = 0x00000011;
@@ -29,6 +48,11 @@ namespace PrivateViewerApp
         private CheckBox chkAlwaysOnTop;
         private TrackBar tbOpacity;
         private Label lblOpacity;
+
+        // Bottom Watermark Panel (Indelebile)
+        private Panel bottomPanel;
+        private Label lblFooterStatus;
+        private LinkLabel lnkWatermark;
 
         // Tabs
         private TabControl tabControl;
@@ -69,9 +93,9 @@ namespace PrivateViewerApp
 
         private void InitializeComponent()
         {
-            this.Text = "Private Viewer (Chromium Edition)";
-            this.Size = new Size(960, 640);
-            this.MinimumSize = new Size(640, 420);
+            this.Text = "PrivateViewer (Chromium Edition) - by Alex Ponzin (@Ilponz)";
+            this.Size = new Size(980, 660);
+            this.MinimumSize = new Size(680, 450);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = Color.FromArgb(30, 30, 30);
             this.ForeColor = Color.White;
@@ -94,7 +118,7 @@ namespace PrivateViewerApp
             topPanel.Padding = new Padding(10, 8, 10, 8);
 
             lblTitle = new Label();
-            lblTitle.Text = "🛡️ Private Viewer";
+            lblTitle.Text = "🛡️ PrivateViewer";
             lblTitle.Font = new Font("Segoe UI", 11, FontStyle.Bold);
             lblTitle.ForeColor = Color.White;
             lblTitle.AutoSize = true;
@@ -144,7 +168,41 @@ namespace PrivateViewerApp
             topPanel.Controls.Add(tbOpacity);
 
             // ==========================================
-            // 2. Tab Control
+            // 2. Barra Inferiore Watermark & Autore
+            // ==========================================
+            bottomPanel = new Panel();
+            bottomPanel.Dock = DockStyle.Bottom;
+            bottomPanel.Height = 26;
+            bottomPanel.BackColor = Color.FromArgb(22, 22, 22);
+            bottomPanel.Padding = new Padding(10, 4, 10, 4);
+
+            lblFooterStatus = new Label();
+            lblFooterStatus.Text = "🔒 Schermo Protetto | Boss Key: [ESC] per nascondere";
+            lblFooterStatus.Font = new Font("Segoe UI", 8.5f);
+            lblFooterStatus.ForeColor = Color.DarkGray;
+            lblFooterStatus.AutoSize = true;
+            lblFooterStatus.Location = new Point(8, 5);
+
+            lnkWatermark = new LinkLabel();
+            lnkWatermark.Text = "⚡ Ideato & Sviluppato da Alex Ponzin (@Ilponz) - GitHub";
+            lnkWatermark.Font = new Font("Segoe UI", 8.5f, FontStyle.Bold);
+            lnkWatermark.LinkColor = Color.FromArgb(0, 168, 255);
+            lnkWatermark.ActiveLinkColor = Color.DeepSkyBlue;
+            lnkWatermark.VisitedLinkColor = Color.FromArgb(0, 168, 255);
+            lnkWatermark.AutoSize = true;
+            lnkWatermark.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            lnkWatermark.Location = new Point(bottomPanel.Width - 365, 5);
+            lnkWatermark.Cursor = Cursors.Hand;
+            lnkWatermark.LinkClicked += (s, e) => {
+                try { Process.Start(REPO_URL); } catch { }
+            };
+            toolTip.SetToolTip(lnkWatermark, "Clicca per visitare il repository ufficiale di Alex Ponzin");
+
+            bottomPanel.Controls.Add(lblFooterStatus);
+            bottomPanel.Controls.Add(lnkWatermark);
+
+            // ==========================================
+            // 3. Tab Control
             // ==========================================
             tabControl = new TabControl();
             tabControl.Dock = DockStyle.Fill;
@@ -182,7 +240,7 @@ namespace PrivateViewerApp
                     if (sfd.ShowDialog() == DialogResult.OK)
                     {
                         File.WriteAllText(sfd.FileName, txtNotes.Text);
-                        MessageBox.Show("Note salvate con successo!", "Private Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show("Note salvate con successo!", "PrivateViewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                 }
             };
@@ -198,7 +256,12 @@ namespace PrivateViewerApp
             txtNotes.ForeColor = Color.FromArgb(220, 220, 220);
             txtNotes.Font = new Font("Consolas", 10);
             txtNotes.BorderStyle = BorderStyle.None;
-            txtNotes.Text = "// Questa finestra e tutto il suo contenuto sono invisibili a screenshot, streaming e registratori dello schermo.\r\n// Puoi scrivere note riservate, incollare password, appunti o testi personali.\r\n";
+            txtNotes.Text = "// =============================================================================\r\n" +
+                            "// PrivateViewer (Chromium Edition)\r\n" +
+                            "// Ideato e creato da: Alex Ponzin (@Ilponz)\r\n" +
+                            "// Repository Ufficiale: https://github.com/Ilponz/PrivateViewer\r\n" +
+                            "// =============================================================================\r\n" +
+                            "// Questa finestra e tutto il suo contenuto sono invisibili a screenshot e stream.\r\n\r\n";
 
             tabNotes.Controls.Add(txtNotes);
             tabNotes.Controls.Add(notesToolbar);
@@ -287,11 +350,12 @@ namespace PrivateViewerApp
             tabControl.TabPages.Add(tabBrowser);
 
             this.Controls.Add(tabControl);
+            this.Controls.Add(bottomPanel);
             this.Controls.Add(topPanel);
 
             // Icona di notifica nella System Tray per "Boss Key"
             trayIcon = new NotifyIcon();
-            trayIcon.Text = "Private Viewer (Clicca per ripristinare)";
+            trayIcon.Text = "PrivateViewer - Alex Ponzin (Clicca per ripristinare)";
             trayIcon.Icon = SystemIcons.Shield;
             trayIcon.Visible = false;
             trayIcon.Click += (s, e) => {

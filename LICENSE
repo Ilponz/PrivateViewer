@@ -1,21 +1,33 @@
-MIT License
+PROPRIETARY & ATTRIBUTION LICENSE (WATERMARK PROTECTED)
 
-Copyright (c) 2026 Alex Ponzin
+Copyright (c) 2026 Alex Ponzin (@Ilponz)
+Repository: https://github.com/Ilponz/PrivateViewer
+All rights reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+================================================================================
+CLAUSOLA INDELEBILE DI PATERNITÀ, ATTRIBUZIONE E WATERMARK
+================================================================================
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+1. PATERNITÀ DELL'OPERA:
+   L'ideatore, autore originale ed esclusivo titolare di questo software e del 
+   relativo codice sorgente è Alex Ponzin (profilo GitHub: @Ilponz).
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+2. DIVIETO ASSOLUTO DI RIMOZIONE WATERMARK E METADATI:
+   È espressamente e categoricamente vietato a chiunque:
+   a) Rimuovere, oscurare, modificare o alterare il watermark visivo dell'autore
+      presente nell'interfaccia grafica (barra inferiore "Created by Alex Ponzin").
+   b) Rimuovere o alterare i metadati incorporati nei binari compilati 
+      (Assembly Details: AssemblyCompany, AssemblyCopyright, AssemblyTrademark).
+   c) Rimuovere i commenti di attribuzione in testa al codice sorgente.
+
+3. CONDIZIONI PER FORK E CONDIVISIONE:
+   Qualsiasi copia, fork, ridistribuzione o derivato del codice sorgente o del 
+   binario compilato DEVE obbligatoriamente mantenere in primo piano il nome di 
+   Alex Ponzin come ideatore originario e includere il link al repository 
+   ufficiale (https://github.com/Ilponz/PrivateViewer).
+
+4. USO COMMERCIALE:
+   È vietata la vendita o l'inclusione di questo software in pacchetti commerciali 
+   senza il preventivo consenso scritto di Alex Ponzin.
+
+IL PRESENTE SOFTWARE VIENE FORNITO "COSÌ COM'È", SENZA GARANZIE DI ALCUN TIPO.
