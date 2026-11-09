@@ -13,14 +13,14 @@ using Microsoft.Web.WebView2.WinForms;
 // ==============================================================================
 // METADATI UFFICIALI E FIRMA INDELEBILE DELL'AUTORE (Proprietà file .EXE Windows)
 // ==============================================================================
-[assembly: AssemblyTitle("PrivateViewer (Chrome-Style Multi-Tab & Dark Edition)")]
+[assembly: AssemblyTitle("PrivateViewer (Clean & Streamlined Edition)")]
 [assembly: AssemblyDescription("Created by Alex Ponzin (@Ilponz) - Anti-Capture Multi-Tab Protected Workspace")]
 [assembly: AssemblyCompany("Alex Ponzin (Ilponz)")]
 [assembly: AssemblyProduct("PrivateViewer")]
 [assembly: AssemblyCopyright("Copyright © 2026 Alex Ponzin (@Ilponz). All rights reserved.")]
 [assembly: AssemblyTrademark("Original Software by Alex Ponzin")]
-[assembly: AssemblyVersion("2.4.0.0")]
-[assembly: AssemblyFileVersion("2.4.0.0")]
+[assembly: AssemblyVersion("2.5.0.0")]
+[assembly: AssemblyFileVersion("2.5.0.0")]
 
 namespace PrivateViewerApp
 {
@@ -65,30 +65,20 @@ namespace PrivateViewerApp
         // Core WebView2 Shared Environment
         private static CoreWebView2Environment sharedEnv;
 
-        // Top Control Panels (Responsive & Nascondibili)
-        private Panel topContainer;
+        // Top Control Panel (Unico, pulito e compatto)
         private Panel topPanel;
         private FlowLayoutPanel flowTopLeft;
         private Label lblTitle;
         private Button btnToggleAffinity;
+        private Button btnOpenFile;
+        private Button btnToggleMenu;
         private CheckBox chkAlwaysOnTop;
         private CheckBox chkHideTaskbar;
         private Panel pnlOpacity;
         private TrackBar tbOpacity;
         private Label lblOpacity;
 
-        // Quick Tools Buttons
-        private FlowLayoutPanel quickBar;
-        private Button btnNewTab;
-        private Button btnOpenFile;
-        private Button btnChatGPT;
-        private Button btnGemini;
-        private Button btnWhatsApp;
-        private Button btnWebApps;
-        private Button btnToggleMenu;
-        private ContextMenuStrip menuWebApps;
-
-        // Mini bar visibile quando i menu sono nascosti
+        // Mini bar visibile quando la barra superiore è nascosta
         private Panel pnlMiniBar;
         private Button btnRestoreMenu;
         private Label lblMiniShortcuts;
@@ -164,18 +154,12 @@ namespace PrivateViewerApp
             SetupTabContextMenu();
 
             // ==========================================
-            // CONTENITORE SUPERIORE (Top Container)
+            // 1. Barra Superiore Unica e Compatta (Top Panel)
             // ==========================================
-            topContainer = new Panel();
-            topContainer.Dock = DockStyle.Top;
-            topContainer.AutoSize = true;
-            topContainer.BackColor = Color.FromArgb(32, 32, 32);
-
-            // 1. Barra Impostazioni & Stealth
             topPanel = new Panel();
             topPanel.Dock = DockStyle.Top;
             topPanel.Height = 44;
-            topPanel.BackColor = Color.FromArgb(36, 36, 36);
+            topPanel.BackColor = Color.FromArgb(34, 34, 34);
             topPanel.Padding = new Padding(6, 4, 6, 4);
 
             pnlOpacity = new Panel();
@@ -223,18 +207,25 @@ namespace PrivateViewerApp
             btnToggleAffinity.FlatStyle = FlatStyle.Flat;
             btnToggleAffinity.FlatAppearance.BorderSize = 0;
             btnToggleAffinity.Font = new Font("Segoe UI", 9, FontStyle.Bold);
-            btnToggleAffinity.Size = new Size(165, 28);
-            btnToggleAffinity.Margin = new Padding(4, 4, 8, 4);
+            btnToggleAffinity.Size = new Size(160, 28);
+            btnToggleAffinity.Margin = new Padding(4, 4, 6, 4);
             btnToggleAffinity.Cursor = Cursors.Hand;
             btnToggleAffinity.Click += BtnToggleAffinity_Click;
             toolTip.SetToolTip(btnToggleAffinity, "Attiva o disattiva la protezione da registrazione e screenshot");
+
+            // Unico pulsante strumenti mantenuto: Visualizzatore PDF e File locali
+            btnOpenFile = CreateToolbarButton("📂 Apri File / PDF", 120, 28, Color.FromArgb(55, 55, 55), "Apri un PDF o file locale in modalità protetta");
+            btnOpenFile.Click += BtnOpenFile_Click;
+
+            btnToggleMenu = CreateToolbarButton("▲ Nascondi Barra", 120, 28, Color.FromArgb(48, 48, 48), "Nascondi questa barra per vedere solo le schede e pagine (Ctrl + M)");
+            btnToggleMenu.Click += (s, e) => { ToggleMenuVisibility(); };
 
             chkAlwaysOnTop = new CheckBox();
             chkAlwaysOnTop.Text = "Sempre in primo";
             chkAlwaysOnTop.ForeColor = Color.LightGray;
             chkAlwaysOnTop.Font = new Font("Segoe UI", 9);
             chkAlwaysOnTop.AutoSize = true;
-            chkAlwaysOnTop.Margin = new Padding(4, 8, 8, 4);
+            chkAlwaysOnTop.Margin = new Padding(6, 8, 6, 4);
             chkAlwaysOnTop.CheckedChanged += (s, e) => { this.TopMost = chkAlwaysOnTop.Checked; };
 
             chkHideTaskbar = new CheckBox();
@@ -243,7 +234,7 @@ namespace PrivateViewerApp
             chkHideTaskbar.Font = new Font("Segoe UI", 9, FontStyle.Bold);
             chkHideTaskbar.AutoSize = true;
             chkHideTaskbar.Checked = true;
-            chkHideTaskbar.Margin = new Padding(4, 8, 8, 4);
+            chkHideTaskbar.Margin = new Padding(6, 8, 6, 4);
             chkHideTaskbar.CheckedChanged += (s, e) => {
                 this.ShowInTaskbar = !chkHideTaskbar.Checked;
             };
@@ -251,58 +242,16 @@ namespace PrivateViewerApp
 
             flowTopLeft.Controls.Add(lblTitle);
             flowTopLeft.Controls.Add(btnToggleAffinity);
+            flowTopLeft.Controls.Add(btnOpenFile);
+            flowTopLeft.Controls.Add(btnToggleMenu);
             flowTopLeft.Controls.Add(chkAlwaysOnTop);
             flowTopLeft.Controls.Add(chkHideTaskbar);
 
             topPanel.Controls.Add(flowTopLeft);
             topPanel.Controls.Add(pnlOpacity);
 
-            // 2. Barra Rapida: Nuova Scheda, File, Web Apps, Tasto Nascondi Menu
-            quickBar = new FlowLayoutPanel();
-            quickBar.Dock = DockStyle.Top;
-            quickBar.AutoSize = true;
-            quickBar.WrapContents = true;
-            quickBar.BackColor = Color.FromArgb(26, 26, 26);
-            quickBar.Padding = new Padding(6, 4, 6, 4);
-
-            btnNewTab = CreateToolbarButton("➕ Scheda", 95, 28, Color.FromArgb(0, 122, 204), "Apre una nuova scheda protetta (Ctrl + T)");
-            btnNewTab.Click += (s, e) => { AddNewBrowserTab("https://www.google.com"); };
-
-            btnOpenFile = CreateToolbarButton("📂 File / PDF", 95, 28, Color.FromArgb(55, 55, 55), "Apri un PDF o file locale in modalità protetta");
-            btnOpenFile.Click += BtnOpenFile_Click;
-
-            btnChatGPT = CreateToolbarButton("🤖 ChatGPT", 95, 28, Color.FromArgb(16, 140, 110), "Avvia ChatGPT in una nuova scheda");
-            btnChatGPT.Click += (s, e) => { AddNewBrowserTab("https://chatgpt.com"); };
-
-            btnGemini = CreateToolbarButton("🧠 Gemini", 85, 28, Color.FromArgb(70, 70, 130), "Avvia Google Gemini");
-            btnGemini.Click += (s, e) => { AddNewBrowserTab("https://gemini.google.com"); };
-
-            btnWhatsApp = CreateToolbarButton("💬 WhatsApp", 95, 28, Color.FromArgb(30, 135, 70), "Avvia WhatsApp Web");
-            btnWhatsApp.Click += (s, e) => { AddNewBrowserTab("https://web.whatsapp.com"); };
-
-            btnWebApps = CreateToolbarButton("🚀 Altre App ▾", 105, 28, Color.FromArgb(55, 55, 55), "Telegram, Wikipedia, Calcolatrice, Traduttore, Documenti...");
-            btnWebApps.Click += (s, e) => {
-                menuWebApps.Show(btnWebApps, new Point(0, btnWebApps.Height));
-            };
-
-            SetupWebAppsMenu();
-
-            btnToggleMenu = CreateToolbarButton("▲ Nascondi Menu", 125, 28, Color.FromArgb(50, 50, 50), "Nascondi i menu superiori per vedere solo le pagine (Ctrl + M)");
-            btnToggleMenu.Click += (s, e) => { ToggleMenuVisibility(); };
-
-            quickBar.Controls.Add(btnNewTab);
-            quickBar.Controls.Add(btnOpenFile);
-            quickBar.Controls.Add(btnChatGPT);
-            quickBar.Controls.Add(btnGemini);
-            quickBar.Controls.Add(btnWhatsApp);
-            quickBar.Controls.Add(btnWebApps);
-            quickBar.Controls.Add(btnToggleMenu);
-
-            topContainer.Controls.Add(quickBar);
-            topContainer.Controls.Add(topPanel);
-
             // ==========================================
-            // Mini Bar (Visibile quando i menu sono nascosti)
+            // Mini Bar (Visibile quando la barra è nascosta)
             // ==========================================
             pnlMiniBar = new Panel();
             pnlMiniBar.Dock = DockStyle.Top;
@@ -312,7 +261,7 @@ namespace PrivateViewerApp
             pnlMiniBar.Visible = false;
 
             btnRestoreMenu = new Button();
-            btnRestoreMenu.Text = "▼ Mostra Menu (Ctrl+M)";
+            btnRestoreMenu.Text = "▼ Mostra Barra (Ctrl+M)";
             btnRestoreMenu.Font = new Font("Segoe UI", 8.5f, FontStyle.Bold);
             btnRestoreMenu.FlatStyle = FlatStyle.Flat;
             btnRestoreMenu.FlatAppearance.BorderSize = 0;
@@ -322,10 +271,10 @@ namespace PrivateViewerApp
             btnRestoreMenu.Location = new Point(6, 2);
             btnRestoreMenu.Cursor = Cursors.Hand;
             btnRestoreMenu.Click += (s, e) => { ToggleMenuVisibility(); };
-            toolTip.SetToolTip(btnRestoreMenu, "Riapre le barre superiori dei menu e delle Web App (Ctrl + M)");
+            toolTip.SetToolTip(btnRestoreMenu, "Riapre la barra superiore dei comandi (Ctrl + M)");
 
             lblMiniShortcuts = new Label();
-            lblMiniShortcuts.Text = "💡 [Ctrl+M] Mostra Menu | [F11] Schermo Intero | [ESC] Boss Key";
+            lblMiniShortcuts.Text = "💡 [Ctrl+M] Mostra Barra | [F11] Schermo Intero | [ESC] Boss Key";
             lblMiniShortcuts.Font = new Font("Segoe UI", 8.5f);
             lblMiniShortcuts.ForeColor = Color.DarkGray;
             lblMiniShortcuts.Dock = DockStyle.Right;
@@ -335,7 +284,7 @@ namespace PrivateViewerApp
             pnlMiniBar.Controls.Add(lblMiniShortcuts);
 
             // ==========================================
-            // 3. Barra Inferiore Watermark & Autore
+            // 2. Barra Inferiore Watermark & Autore
             // ==========================================
             bottomPanel = new Panel();
             bottomPanel.Dock = DockStyle.Bottom;
@@ -368,7 +317,7 @@ namespace PrivateViewerApp
             bottomPanel.Controls.Add(lnkWatermark);
 
             // ==========================================
-            // 4. Tab Control (Stile Chrome: Drag, Reorder, Add, Close)
+            // 3. Tab Control (Stile Chrome: Drag, Reorder, Add, Close)
             // ==========================================
             tabControl = new TabControl();
             tabControl.Dock = DockStyle.Fill;
@@ -419,7 +368,7 @@ namespace PrivateViewerApp
             txtNotes.Font = new Font("Consolas", 10);
             txtNotes.BorderStyle = BorderStyle.None;
             txtNotes.Text = "// =============================================================================\r\n" +
-                            "// PrivateViewer (Chrome-Style Multi-Tab & Dark Edition)\r\n" +
+                            "// PrivateViewer (Clean & Streamlined Edition)\r\n" +
                             "// Ideato e creato da: Alex Ponzin (@Ilponz)\r\n" +
                             "// Repository: https://github.com/Ilponz/PrivateViewer\r\n" +
                             "// =============================================================================\r\n" +
@@ -439,7 +388,6 @@ namespace PrivateViewerApp
             tabControl.TabPages.Add(tabAddButton);
 
             tabControl.SelectedIndexChanged += (s, e) => {
-                // Se l'utente clicca sul tab [+], crea istantaneamente una nuova scheda
                 if (tabControl.SelectedTab == tabAddButton)
                 {
                     AddNewBrowserTab("https://www.google.com");
@@ -449,7 +397,7 @@ namespace PrivateViewerApp
             this.Controls.Add(tabControl);
             this.Controls.Add(bottomPanel);
             this.Controls.Add(pnlMiniBar);
-            this.Controls.Add(topContainer);
+            this.Controls.Add(topPanel);
 
             // Supporto Drag and Drop di file (PDF o immagini)
             this.DragEnter += (s, e) => {
@@ -489,7 +437,6 @@ namespace PrivateViewerApp
                 {
                     if (tabControl.GetTabRect(i).Contains(e.Location))
                     {
-                        // Non permettere di trascinare il tab [+]
                         if (tabControl.TabPages[i] != tabAddButton)
                         {
                             dragStartPoint = e.Location;
@@ -499,7 +446,6 @@ namespace PrivateViewerApp
                     }
                 }
             }
-            // Click con la rotellina (Middle Click): chiude la scheda all'istante
             else if (e.Button == MouseButtons.Middle)
             {
                 for (int i = 0; i < tabControl.TabCount; i++)
@@ -515,7 +461,6 @@ namespace PrivateViewerApp
                     }
                 }
             }
-            // Click con tasto destro: menu contestuale della scheda
             else if (e.Button == MouseButtons.Right)
             {
                 for (int i = 0; i < tabControl.TabCount; i++)
@@ -539,7 +484,6 @@ namespace PrivateViewerApp
         {
             if (e.Button == MouseButtons.Left && dragTab != null && dragTab != tabAddButton)
             {
-                // Verifica soglia minima di trascinamento
                 if (Math.Abs(e.X - dragStartPoint.X) > 8 || Math.Abs(e.Y - dragStartPoint.Y) > 8)
                 {
                     for (int i = 0; i < tabControl.TabCount; i++)
@@ -547,7 +491,6 @@ namespace PrivateViewerApp
                         Rectangle rect = tabControl.GetTabRect(i);
                         TabPage hoverTab = tabControl.TabPages[i];
 
-                        // Sposta e riordina la scheda mantenendo il tab [+] sempre alla fine
                         if (rect.Contains(e.Location) && hoverTab != dragTab && hoverTab != tabAddButton)
                         {
                             int targetIdx = i;
@@ -581,7 +524,6 @@ namespace PrivateViewerApp
                         break;
                     }
                 }
-                // Doppio clic su uno spazio vuoto della barra schede apre una nuova scheda
                 if (!onTab)
                 {
                     AddNewBrowserTab("https://www.google.com");
@@ -712,12 +654,12 @@ namespace PrivateViewerApp
         }
 
         // ==============================================================================
-        // MODALITÀ FOCUS / NASCONDI MENU (Mostra solo le pagine web)
+        // MODALITÀ FOCUS / NASCONDI BARRA (Mostra solo le pagine web)
         // ==============================================================================
         public void ToggleMenuVisibility()
         {
             isMenuHidden = !isMenuHidden;
-            topContainer.Visible = !isMenuHidden;
+            topPanel.Visible = !isMenuHidden;
             pnlMiniBar.Visible = isMenuHidden;
         }
 
@@ -730,7 +672,7 @@ namespace PrivateViewerApp
                 prevBorderStyle = this.FormBorderStyle;
                 this.FormBorderStyle = FormBorderStyle.None;
                 this.WindowState = FormWindowState.Maximized;
-                topContainer.Visible = false;
+                topPanel.Visible = false;
                 pnlMiniBar.Visible = false;
                 bottomPanel.Visible = false;
             }
@@ -738,7 +680,7 @@ namespace PrivateViewerApp
             {
                 this.FormBorderStyle = prevBorderStyle;
                 this.WindowState = prevWindowState;
-                topContainer.Visible = !isMenuHidden;
+                topPanel.Visible = !isMenuHidden;
                 pnlMiniBar.Visible = isMenuHidden;
                 bottomPanel.Visible = true;
             }
@@ -751,7 +693,7 @@ namespace PrivateViewerApp
             itemShow.Font = new Font(trayMenu.Font, FontStyle.Bold);
             trayMenu.Items.Add("Nascondi nella Tray (Boss Key)", null, (s, e) => HideToTray());
             trayMenu.Items.Add(new ToolStripSeparator());
-            trayMenu.Items.Add("Mostra/Nascondi Menu (Ctrl+M)", null, (s, e) => {
+            trayMenu.Items.Add("Mostra/Nascondi Barra (Ctrl+M)", null, (s, e) => {
                 RestoreWindow();
                 ToggleMenuVisibility();
             });
@@ -797,18 +739,6 @@ namespace PrivateViewerApp
             btn.Cursor = Cursors.Hand;
             toolTip.SetToolTip(btn, tip);
             return btn;
-        }
-
-        private void SetupWebAppsMenu()
-        {
-            menuWebApps = new ContextMenuStrip();
-            menuWebApps.Items.Add("✈️ Telegram Web", null, (s, e) => AddNewBrowserTab("https://web.telegram.org"));
-            menuWebApps.Items.Add("📖 Wikipedia", null, (s, e) => AddNewBrowserTab("https://it.wikipedia.org"));
-            menuWebApps.Items.Add(new ToolStripSeparator());
-            menuWebApps.Items.Add("🧮 Calcolatrice Scientifica", null, (s, e) => AddNewBrowserTab("https://www.desmos.com/scientific"));
-            menuWebApps.Items.Add("🌐 Google Traduttore", null, (s, e) => AddNewBrowserTab("https://translate.google.com"));
-            menuWebApps.Items.Add("📄 Google Documenti", null, (s, e) => AddNewBrowserTab("https://docs.google.com"));
-            menuWebApps.Items.Add("🔍 Google Ricerca", null, (s, e) => AddNewBrowserTab("https://www.google.com"));
         }
 
         private void BtnOpenFile_Click(object sender, EventArgs e)
@@ -1035,7 +965,6 @@ namespace PrivateViewerApp
             if (wv != null) { try { wv.Dispose(); } catch { } }
             try { tab.Dispose(); } catch { }
 
-            // Conta le schede browser rimaste (esclusi Note e [+])
             int browserCount = 0;
             foreach (TabPage t in tabControl.TabPages)
             {
@@ -1178,7 +1107,7 @@ namespace PrivateViewerApp
                 bool ctrlPressed = (Control.ModifierKeys & Keys.Control) == Keys.Control;
                 if (ctrlPressed)
                 {
-                    // Ctrl + M: Mostra/Nascondi Menu (Zen Mode)
+                    // Ctrl + M: Mostra/Nascondi Barra (Zen Mode)
                     if (key == Keys.M)
                     {
                         ToggleMenuVisibility();

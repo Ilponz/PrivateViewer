@@ -1,4 +1,4 @@
-# 🛡️ PrivateViewer (Chrome-Style Multi-Tab & Dark Edition)
+# 🛡️ PrivateViewer (Clean & Streamlined Edition)
 
 [![Author](https://img.shields.io/badge/Author-Alex%20Ponzin%20(%40Ilponz)-blue.svg)](https://github.com/Ilponz)
 [![License](https://img.shields.io/badge/License-Proprietary%20Attribution-red.svg)](https://github.com/Ilponz/PrivateViewer/blob/main/LICENSE)
@@ -31,36 +31,28 @@ SetWindowDisplayAffinity(this.Handle, 0x00000011);
 
 ---
 
-## ✨ Barra Schede in Stile Browser (Chrome/Edge) v2.4
+## ✨ Interfaccia Pulita ed Essenziale v2.5
 
-1. **🔄 Sposta e Riordina le Schede (Drag & Drop):**
-   * Clicca con il mouse su qualsiasi scheda e trascinala a destra o sinistra per riordinarla liberamente in tempo reale, proprio come in Google Chrome.
-2. **➕ Aggiungi Schede Facilmente:**
-   * Clicca sul pulsante permanente **`➕`** posizionato all'estremità delle schede.
-   * Fai **doppio clic sullo spazio vuoto** della barra per aprire subito una nuova scheda.
-   * Scorciatoia rapida: **`Ctrl + T`**.
-3. **✕ Rimuovi e Chiudi le Schede:**
-   * Fai **clic con la rotellina (tasto centrale)** direttamente sulla scheda per chiuderla istantaneamente.
-   * Clicca sul pulsante **`✕`** presente nella barra della scheda o usa **`Ctrl + W`**.
-   * Fai **clic destro sulla scheda** per aprire il menu contestuale:
-     * *✕ Chiudi Scheda*
-     * *🚫 Chiudi le altre schede*
-     * *📄 Duplica Scheda* (apre un clone con lo stesso link)
-     * *🔄 Ricarica*
-     * *⬅️ Sposta a Sinistra* / *➡️ Sposta a Destra*
-4. **🖤 Barra del Titolo Nativa Nera (Dark Title Bar):**
-   * La barra in alto di Windows (con titolo e pulsanti riduci, ingrandisci e chiudi `✕`) è 100% nera con scritte e icone bianche via API DWM nativa.
-5. **👁️ Modalità Focus / Nascondi Menu (Zen Mode):**
-   * Tasto **`▲ Nascondi Menu`** o **`Ctrl + M`** (oppure `F1`) per nascondere tutti i menu superiori e visualizzare **solo le pagine web a tutto schermo**.
-   * Mini-barra a scomparsa con il tasto **`▼ Mostra Menu (Ctrl+M)`** per ripristinare i menu con un clic.
-6. **🖥️ Schermo Intero Immersivo (`F11`):**
-   * Passa alla visualizzazione a schermo intero senza bordi né barre con un solo tasto.
-7. **👻 Modalità Stealth (Invisibile nella Barra Applicazioni):**
+1. **✨ Barra Superiore Unica e Minimale:**
+   * Rimossi tutti i pulsanti ingombranti dei siti web: ora l'interfaccia è pulita, spaziosa e focalizzata sulla navigazione libera.
+   * Mantenuto in primo piano il pulsante essenziale **`📂 Apri File / PDF`** per aprire documenti locali, immagini e PDF protetti da cattura.
+2. **🔄 Barra Schede Stile Chrome (Drag & Drop, Aggiunta, Chiusura):**
+   * **Sposta e Riordina:** Clicca su qualsiasi scheda e trascinala con il mouse per cambiare l'ordine in tempo reale.
+   * **Aggiungi Schede:** Clicca sul tasto permanente **`➕`** all'estremità delle schede, fai doppio clic sulla barra o usa **`Ctrl + T`**.
+   * **Chiudi Schede:** Fai clic con la rotellina del mouse (tasto centrale) su una scheda, usa il tasto **`✕`** o premi **`Ctrl + W`**.
+   * **Menu Tasto Destro:** Chiudi scheda, Chiudi le altre schede, Duplica scheda, Ricarica, Sposta a sinistra/destra.
+3. **🖤 Barra del Titolo Nativa Nera (Dark Title Bar):**
+   * La barra in alto di Windows (con titolo e pulsanti `_`, `□`, `✕`) è 100% nera con scritte e icone bianche via API DWM nativa.
+4. **👁️ Modalità Focus / Nascondi Barra (Zen Mode):**
+   * Tasto **`▲ Nascondi Barra`** o **`Ctrl + M`** (oppure `F1`) per nascondere la barra superiore e visualizzare **solo le schede e le pagine web a tutto spazio**.
+   * Mini-barra con il tasto **`▼ Mostra Barra (Ctrl+M)`** per ripristinare i comandi con un clic.
+5. **🖥️ Schermo Intero Immersivo (`F11`):**
+   * Passa a schermo intero totale senza barre né bordi.
+6. **👻 Modalità Stealth (Invisibile nella Barra Applicazioni):**
    * L'applicazione non compare nella barra di Windows in basso; è accessibile da monitor e da System Tray.
-8. **📂 Visualizzatore Documenti PDF & File Locali:**
+7. **📂 Visualizzatore Documenti PDF & File Locali:**
    * Apri PDF o immagini dal tasto dedicato o semplicemente trascinandoli dentro la finestra (Drag-and-Drop).
-9. **🚀 Centro Web Apps con 1 Clic:**
-   * Pulsanti rapidi per **ChatGPT**, **Gemini**, **WhatsApp Web**, **Telegram**, **Wikipedia**, **Calcolatrice**, ecc.
+8. **Boss Key Globale (`ESC`):** Nasconde la finestra istantaneamente nella barra di sistema.
 
 ---
 

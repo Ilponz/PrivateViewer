@@ -1,6 +1,6 @@
 ================================================================================
                          PRIVATEVIEWER - GUIDA COMPLETA
-                  (Chrome-Style Multi-Tab & Dark Edition v2.4)
+                     (Clean & Streamlined Edition v2.5)
 ================================================================================
 
 INDICE DEI CONTENUTI
@@ -16,8 +16,8 @@ INDICE DEI CONTENUTI
 1. COS'E' PRIVATEVIEWER
 ================================================================================
 PrivateViewer e' una suite desktop autonoma, invisibile a catture dello schermo e 
-progettata per proteggere appunti, documenti PDF, pagine web e web app (come 
-ChatGPT o WhatsApp Web) dalla registrazione video o da condivisioni schermo.
+progettata per proteggere appunti, documenti PDF e navigazione web da registrazioni 
+video o condivisioni schermo.
 
 Quando e' attiva, la finestra e' perfettamente visibile e utilizzabile da chi e' 
 seduto davanti al monitor fisico, ma risulta completamente INVISIBILE a:
@@ -32,11 +32,16 @@ seduto davanti al monitor fisico, ma risulta completamente INVISIBILE a:
 - AVVIO:
   Fai doppio clic su "PrivateViewer.exe".
 
+- INTERFACCIA PULITA ED ESSENZIALE:
+  Tutti i pulsanti ingombranti dei singoli siti sono stati rimossi per lasciare 
+  massimo spazio alla navigazione libera. Nella barra in alto rimane il pulsante 
+  fondamentale "📂 Apri File / PDF" per consultare documenti e file locali.
+
 - GESTIONE SCHEDE COME UN VERO BROWSER (CHROME / EDGE):
   * AGGIUNGERE:
     - Clicca sulla scheda permanente [➕] posizionata all'estremita' destra delle schede.
     - Fai DOPPIO CLIC su uno spazio vuoto della barra delle schede.
-    - Premi [Ctrl + T] o clicca su "➕ Scheda" in alto.
+    - Premi [Ctrl + T].
   * SPOSTARE / RIORDINARE:
     - Clicca con il mouse su qualsiasi scheda e TRASCINALA (Drag & Drop) a sinistra 
       o a destra per riordinare la barra delle schede in tempo reale.
@@ -52,11 +57,11 @@ seduto davanti al monitor fisico, ma risulta completamente INVISIBILE a:
   La barra in alto con il titolo e i pulsanti di riduzione, ingrandimento e 
   chiusura [X] e' ora completamente nera con scritte bianche via API DWM nativa.
 
-- MODALITA' FOCUS / NASCONDI MENU (ZEN MODE):
-  * Clicca su "▲ Nascondi Menu" oppure premi [Ctrl + M] (o [F1]) per nascondere 
-    all'istante tutte le barre superiori e visualizzare SOLO le schede e le pagine web.
-  * Una sottile barra superiore con il tasto "▼ Mostra Menu (Ctrl+M)" permette di 
-    ripristinare i menu con un clic.
+- MODALITA' FOCUS / NASCONDI BARRA (ZEN MODE):
+  * Clicca su "▲ Nascondi Barra" oppure premi [Ctrl + M] (o [F1]) per nascondere 
+    all'istante la barra superiore e visualizzare SOLO le schede e le pagine web.
+  * Una sottile barra superiore con il tasto "▼ Mostra Barra (Ctrl+M)" permette di 
+    ripristinarla con un clic.
   * Premendo [F11] si passa alla modalita' Schermo Intero totale senza bordi.
 
 - MODALITA' STEALTH (INVISIBILE NELLA BARRA DELLE APPLICAZIONI):
@@ -66,12 +71,8 @@ seduto davanti al monitor fisico, ma risulta completamente INVISIBILE a:
   un clic sinistro o di aprire il menu contestuale con il clic destro.
 
 - VISUALIZZATORE PDF E DOCUMENTI:
-  * Clicca su "📂 File / PDF" per selezionare qualsiasi documento PDF o immagine.
+  * Clicca su "📂 Apri File / PDF" per selezionare qualsiasi documento PDF o immagine.
   * Oppure trascina semplicemente il file PDF dentro la finestra (Drag-and-Drop).
-
-- MENU WEB APPS RAPIDE:
-  Pulsanti diretti a 1 clic per ChatGPT, Gemini, WhatsApp Web e menu a tendina 
-  per Telegram Web, Wikipedia, Calcolatrice Scientifica e Google Traduttore.
 
 - BOSS KEY RAPIDO GLOBALE (Tasto ESC):
   Premendo [ESC] la finestra scompare all'istante nascondendosi nell'area 
