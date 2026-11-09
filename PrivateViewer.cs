@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -12,14 +13,14 @@ using Microsoft.Web.WebView2.WinForms;
 // ==============================================================================
 // METADATI UFFICIALI E FIRMA INDELEBILE DELL'AUTORE (Proprietà file .EXE Windows)
 // ==============================================================================
-[assembly: AssemblyTitle("PrivateViewer (Dark Title Bar & Zen Mode Edition)")]
+[assembly: AssemblyTitle("PrivateViewer (Chrome-Style Multi-Tab & Dark Edition)")]
 [assembly: AssemblyDescription("Created by Alex Ponzin (@Ilponz) - Anti-Capture Multi-Tab Protected Workspace")]
 [assembly: AssemblyCompany("Alex Ponzin (Ilponz)")]
 [assembly: AssemblyProduct("PrivateViewer")]
 [assembly: AssemblyCopyright("Copyright © 2026 Alex Ponzin (@Ilponz). All rights reserved.")]
 [assembly: AssemblyTrademark("Original Software by Alex Ponzin")]
-[assembly: AssemblyVersion("2.3.0.0")]
-[assembly: AssemblyFileVersion("2.3.0.0")]
+[assembly: AssemblyVersion("2.4.0.0")]
+[assembly: AssemblyFileVersion("2.4.0.0")]
 
 namespace PrivateViewerApp
 {
@@ -103,11 +104,18 @@ namespace PrivateViewerApp
         private Label lblFooterStatus;
         private LinkLabel lnkWatermark;
 
-        // Tabs
+        // Tabs (Chrome-like Drag & Reorder, Close, Add)
         private TabControl tabControl;
         private TabPage tabNotes;
+        private TabPage tabAddButton;
         private TextBox txtNotes;
         private int tabCounter = 1;
+
+        // Drag & Drop delle schede
+        private TabPage dragTab = null;
+        private Point dragStartPoint = Point.Empty;
+        private ContextMenuStrip tabContextMenu;
+        private TabPage contextTargetTab = null;
 
         // Tooltip & Tray
         private ToolTip toolTip;
@@ -131,7 +139,7 @@ namespace PrivateViewerApp
         private void InitializeComponent()
         {
             this.Text = "PrivateViewer - by Alex Ponzin (@Ilponz)";
-            this.Size = new Size(1020, 680);
+            this.Size = new Size(1040, 700);
             this.MinimumSize = new Size(540, 360);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = Color.FromArgb(20, 20, 20);
@@ -151,6 +159,9 @@ namespace PrivateViewerApp
 
             // Setup Tray Icon & Context Menu
             SetupTrayIcon();
+
+            // Setup Menu contestuale tasto destro per le schede
+            SetupTabContextMenu();
 
             // ==========================================
             // CONTENITORE SUPERIORE (Top Container)
@@ -333,7 +344,7 @@ namespace PrivateViewerApp
             bottomPanel.Padding = new Padding(6, 2, 6, 2);
 
             lblFooterStatus = new Label();
-            lblFooterStatus.Text = "🔒 Schermo Protetto | Trascina PDF o file qui per aprirli";
+            lblFooterStatus.Text = "🔒 Trascina le schede per riordinarle | Click rotellina per chiudere | Trascina file/PDF per aprirli";
             lblFooterStatus.Font = new Font("Segoe UI", 8.5f);
             lblFooterStatus.ForeColor = Color.DarkGray;
             lblFooterStatus.Dock = DockStyle.Left;
@@ -357,13 +368,20 @@ namespace PrivateViewerApp
             bottomPanel.Controls.Add(lnkWatermark);
 
             // ==========================================
-            // 4. Tab Control (Note & Schede Browser)
+            // 4. Tab Control (Stile Chrome: Drag, Reorder, Add, Close)
             // ==========================================
             tabControl = new TabControl();
             tabControl.Dock = DockStyle.Fill;
-            tabControl.Font = new Font("Segoe UI", 9);
+            tabControl.Font = new Font("Segoe UI", 9.5f);
+            tabControl.AllowDrop = true;
 
-            // --- SCHEDA PREDEFINITA: NOTE PRIVATE ---
+            // Eventi per Drag and Drop delle schede (Spostare come in Chrome)
+            tabControl.MouseDown += TabControl_MouseDown;
+            tabControl.MouseMove += TabControl_MouseMove;
+            tabControl.MouseUp += TabControl_MouseUp;
+            tabControl.MouseDoubleClick += TabControl_MouseDoubleClick;
+
+            // --- SCHEDA 1: NOTE PRIVATE ---
             tabNotes = new TabPage("📝 Note Private");
             tabNotes.BackColor = Color.FromArgb(20, 20, 20);
 
@@ -401,17 +419,32 @@ namespace PrivateViewerApp
             txtNotes.Font = new Font("Consolas", 10);
             txtNotes.BorderStyle = BorderStyle.None;
             txtNotes.Text = "// =============================================================================\r\n" +
-                            "// PrivateViewer (Dark Title Bar & Zen Mode Edition)\r\n" +
+                            "// PrivateViewer (Chrome-Style Multi-Tab & Dark Edition)\r\n" +
                             "// Ideato e creato da: Alex Ponzin (@Ilponz)\r\n" +
                             "// Repository: https://github.com/Ilponz/PrivateViewer\r\n" +
                             "// =============================================================================\r\n" +
-                            "// Questa finestra e tutto il suo contenuto sono invisibili a screenshot e stream.\r\n" +
-                            "// Premi Ctrl+M per nascondere i menu e visualizzare SOLO le pagine web.\r\n" +
-                            "// Premi F11 per la modalità Schermo Intero.\r\n\r\n";
+                            "// • Trascina le schede per riordinarle come in un vero browser\r\n" +
+                            "// • Fai clic con la rotellina (tasto centrale) su una scheda per chiuderla\r\n" +
+                            "// • Fai clic sul tasto [+] a destra per aprire una nuova scheda\r\n" +
+                            "// • Fai doppio clic su uno spazio vuoto della barra schede per crearne una\r\n" +
+                            "// • Fai clic destro su una scheda per opzioni rapide (duplica, chiudi altre...)\r\n\r\n";
 
             tabNotes.Controls.Add(txtNotes);
             tabNotes.Controls.Add(notesToolbar);
             tabControl.TabPages.Add(tabNotes);
+
+            // --- SCHEDA PERMANENTE [+] IN STILE CHROME ---
+            tabAddButton = new TabPage(" ➕ ");
+            tabAddButton.ToolTipText = "Nuova Scheda (Ctrl + T)";
+            tabControl.TabPages.Add(tabAddButton);
+
+            tabControl.SelectedIndexChanged += (s, e) => {
+                // Se l'utente clicca sul tab [+], crea istantaneamente una nuova scheda
+                if (tabControl.SelectedTab == tabAddButton)
+                {
+                    AddNewBrowserTab("https://www.google.com");
+                }
+            };
 
             this.Controls.Add(tabControl);
             this.Controls.Add(bottomPanel);
@@ -446,24 +479,232 @@ namespace PrivateViewerApp
         }
 
         // ==============================================================================
-        // DARK TITLE BAR NATIVA WINDOWS (Colore nero e pulsanti scuri per la barra di sistema)
+        // GESTIONE TRASCINAMENTO, RIORDINO E CHIUSURA SCHEDE (STILE BROWSER REALE)
+        // ==============================================================================
+        private void TabControl_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                for (int i = 0; i < tabControl.TabCount; i++)
+                {
+                    if (tabControl.GetTabRect(i).Contains(e.Location))
+                    {
+                        // Non permettere di trascinare il tab [+]
+                        if (tabControl.TabPages[i] != tabAddButton)
+                        {
+                            dragStartPoint = e.Location;
+                            dragTab = tabControl.TabPages[i];
+                        }
+                        break;
+                    }
+                }
+            }
+            // Click con la rotellina (Middle Click): chiude la scheda all'istante
+            else if (e.Button == MouseButtons.Middle)
+            {
+                for (int i = 0; i < tabControl.TabCount; i++)
+                {
+                    if (tabControl.GetTabRect(i).Contains(e.Location))
+                    {
+                        TabPage target = tabControl.TabPages[i];
+                        if (target != tabNotes && target != tabAddButton)
+                        {
+                            CloseBrowserTab(target);
+                        }
+                        break;
+                    }
+                }
+            }
+            // Click con tasto destro: menu contestuale della scheda
+            else if (e.Button == MouseButtons.Right)
+            {
+                for (int i = 0; i < tabControl.TabCount; i++)
+                {
+                    if (tabControl.GetTabRect(i).Contains(e.Location))
+                    {
+                        TabPage target = tabControl.TabPages[i];
+                        if (target != tabAddButton)
+                        {
+                            contextTargetTab = target;
+                            tabControl.SelectedTab = target;
+                            tabContextMenu.Show(tabControl, e.Location);
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+        private void TabControl_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left && dragTab != null && dragTab != tabAddButton)
+            {
+                // Verifica soglia minima di trascinamento
+                if (Math.Abs(e.X - dragStartPoint.X) > 8 || Math.Abs(e.Y - dragStartPoint.Y) > 8)
+                {
+                    for (int i = 0; i < tabControl.TabCount; i++)
+                    {
+                        Rectangle rect = tabControl.GetTabRect(i);
+                        TabPage hoverTab = tabControl.TabPages[i];
+
+                        // Sposta e riordina la scheda mantenendo il tab [+] sempre alla fine
+                        if (rect.Contains(e.Location) && hoverTab != dragTab && hoverTab != tabAddButton)
+                        {
+                            int targetIdx = i;
+                            tabControl.TabPages.Remove(dragTab);
+                            tabControl.TabPages.Insert(targetIdx, dragTab);
+                            tabControl.SelectedTab = dragTab;
+                            dragStartPoint = e.Location;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        private void TabControl_MouseUp(object sender, MouseEventArgs e)
+        {
+            dragTab = null;
+            dragStartPoint = Point.Empty;
+        }
+
+        private void TabControl_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                bool onTab = false;
+                for (int i = 0; i < tabControl.TabCount; i++)
+                {
+                    if (tabControl.GetTabRect(i).Contains(e.Location))
+                    {
+                        onTab = true;
+                        break;
+                    }
+                }
+                // Doppio clic su uno spazio vuoto della barra schede apre una nuova scheda
+                if (!onTab)
+                {
+                    AddNewBrowserTab("https://www.google.com");
+                }
+            }
+        }
+
+        private void SetupTabContextMenu()
+        {
+            tabContextMenu = new ContextMenuStrip();
+            tabContextMenu.Items.Add("➕ Nuova Scheda (Ctrl+T)", null, (s, e) => AddNewBrowserTab("https://www.google.com"));
+            tabContextMenu.Items.Add("📄 Duplica Scheda", null, (s, e) => {
+                if (contextTargetTab != null && contextTargetTab != tabNotes)
+                {
+                    DuplicateBrowserTab(contextTargetTab);
+                }
+            });
+            tabContextMenu.Items.Add("🔄 Ricarica (F5)", null, (s, e) => {
+                if (contextTargetTab != null)
+                {
+                    ReloadBrowserTab(contextTargetTab);
+                }
+            });
+            tabContextMenu.Items.Add(new ToolStripSeparator());
+            tabContextMenu.Items.Add("✕ Chiudi Scheda (Ctrl+W)", null, (s, e) => {
+                if (contextTargetTab != null && contextTargetTab != tabNotes)
+                {
+                    CloseBrowserTab(contextTargetTab);
+                }
+            });
+            tabContextMenu.Items.Add("🚫 Chiudi le altre schede", null, (s, e) => {
+                if (contextTargetTab != null && contextTargetTab != tabNotes)
+                {
+                    CloseOtherTabs(contextTargetTab);
+                }
+            });
+            tabContextMenu.Items.Add(new ToolStripSeparator());
+            tabContextMenu.Items.Add("⬅️ Sposta a Sinistra", null, (s, e) => {
+                if (contextTargetTab != null) MoveTabRelative(contextTargetTab, -1);
+            });
+            tabContextMenu.Items.Add("➡️ Sposta a Destra", null, (s, e) => {
+                if (contextTargetTab != null) MoveTabRelative(contextTargetTab, 1);
+            });
+        }
+
+        private void MoveTabRelative(TabPage tab, int direction)
+        {
+            if (tab == tabAddButton) return;
+            int curIdx = tabControl.TabPages.IndexOf(tab);
+            int newIdx = curIdx + direction;
+            int addIdx = tabControl.TabPages.IndexOf(tabAddButton);
+
+            if (newIdx >= 0 && newIdx < addIdx)
+            {
+                tabControl.TabPages.Remove(tab);
+                tabControl.TabPages.Insert(newIdx, tab);
+                tabControl.SelectedTab = tab;
+            }
+        }
+
+        private void DuplicateBrowserTab(TabPage sourceTab)
+        {
+            string url = "https://www.google.com";
+            foreach (Control c in sourceTab.Controls)
+            {
+                if (c is WebView2)
+                {
+                    var wv = (WebView2)c;
+                    if (wv.Source != null)
+                    {
+                        url = wv.Source.ToString();
+                    }
+                    break;
+                }
+            }
+            AddNewBrowserTab(url);
+        }
+
+        private void ReloadBrowserTab(TabPage tab)
+        {
+            foreach (Control c in tab.Controls)
+            {
+                if (c is WebView2)
+                {
+                    var wv = (WebView2)c;
+                    if (wv.CoreWebView2 != null) wv.Reload();
+                    break;
+                }
+            }
+        }
+
+        private void CloseOtherTabs(TabPage keepTab)
+        {
+            var toClose = new List<TabPage>();
+            foreach (TabPage t in tabControl.TabPages)
+            {
+                if (t != keepTab && t != tabNotes && t != tabAddButton)
+                {
+                    toClose.Add(t);
+                }
+            }
+            foreach (var t in toClose)
+            {
+                CloseBrowserTab(t);
+            }
+        }
+
+        // ==============================================================================
+        // DARK TITLE BAR NATIVA WINDOWS
         // ==============================================================================
         private void ApplyDarkTitleBar()
         {
             try
             {
                 int dark = 1;
-                // Modalità scura immersiva su Windows 10 e Windows 11
                 if (DwmSetWindowAttribute(this.Handle, DWMWA_USE_IMMERSIVE_DARK_MODE, ref dark, sizeof(int)) != 0)
                 {
                     DwmSetWindowAttribute(this.Handle, DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1, ref dark, sizeof(int));
                 }
 
-                // Colore di sfondo della barra del titolo nativa (Nero profondo #141414)
                 int captionColor = 0x00141414;
                 DwmSetWindowAttribute(this.Handle, DWMWA_CAPTION_COLOR, ref captionColor, sizeof(int));
 
-                // Colore del testo della barra del titolo (Bianco brillante)
                 int textColor = 0x00FFFFFF;
                 DwmSetWindowAttribute(this.Handle, DWMWA_TEXT_COLOR, ref textColor, sizeof(int));
             }
@@ -598,14 +839,14 @@ namespace PrivateViewerApp
         }
 
         // ==============================================================================
-        // GESTIONE SCHEDE MULTIPLE BROWSER (RESPONSIVE TABLELAYOUT)
+        // AGGIUNTA SCHEDE BROWSER (Inserite prima del pulsante permanente [+])
         // ==============================================================================
         public async void AddNewBrowserTab(string initialUrl)
         {
             TabPage tabPage = new TabPage("🌐 Scheda " + tabCounter++);
             tabPage.BackColor = Color.FromArgb(20, 20, 20);
 
-            // Barra di navigazione responsive con TableLayoutPanel a larghezza 100% dinamica
+            // Barra di navigazione responsive con TableLayoutPanel
             TableLayoutPanel navTable = new TableLayoutPanel();
             navTable.Dock = DockStyle.Top;
             navTable.Height = 36;
@@ -618,7 +859,7 @@ namespace PrivateViewerApp
             navTable.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 32)); // Forward
             navTable.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 32)); // Reload
             navTable.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 32)); // Home
-            navTable.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100)); // URL Box (100% flessibile)
+            navTable.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100)); // URL Box
             navTable.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 42)); // Go
             navTable.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 36)); // Close Tab
 
@@ -663,7 +904,7 @@ namespace PrivateViewerApp
             btnCloseTab.Dock = DockStyle.Fill;
             btnCloseTab.Margin = new Padding(2);
             btnCloseTab.Cursor = Cursors.Hand;
-            toolTip.SetToolTip(btnCloseTab, "Chiudi questa scheda (Ctrl + W)");
+            toolTip.SetToolTip(btnCloseTab, "Chiudi questa scheda (Ctrl + W o rotellina)");
 
             navTable.Controls.Add(btnBack, 0, 0);
             navTable.Controls.Add(btnForward, 1, 0);
@@ -718,11 +959,21 @@ namespace PrivateViewerApp
                 }
             };
 
-            btnCloseTab.Click += (s, e) => { CloseBrowserTab(tabPage, webView); };
+            btnCloseTab.Click += (s, e) => { CloseBrowserTab(tabPage); };
 
             tabPage.Controls.Add(webView);
             tabPage.Controls.Add(navTable);
-            tabControl.TabPages.Add(tabPage);
+
+            // Inserisci prima della scheda permanente [+]
+            int insertIndex = tabControl.TabPages.IndexOf(tabAddButton);
+            if (insertIndex >= 0)
+            {
+                tabControl.TabPages.Insert(insertIndex, tabPage);
+            }
+            else
+            {
+                tabControl.TabPages.Add(tabPage);
+            }
             tabControl.SelectedTab = tabPage;
 
             try
@@ -770,15 +1021,27 @@ namespace PrivateViewerApp
             }
         }
 
-        private void CloseBrowserTab(TabPage tab, WebView2 webView)
+        public void CloseBrowserTab(TabPage tab)
         {
-            if (tab == tabNotes) return;
+            if (tab == tabNotes || tab == tabAddButton) return;
+
+            WebView2 wv = null;
+            foreach (Control c in tab.Controls)
+            {
+                if (c is WebView2) { wv = (WebView2)c; break; }
+            }
 
             tabControl.TabPages.Remove(tab);
-            try { webView.Dispose(); } catch { }
+            if (wv != null) { try { wv.Dispose(); } catch { } }
             try { tab.Dispose(); } catch { }
 
-            if (tabControl.TabPages.Count == 1)
+            // Conta le schede browser rimaste (esclusi Note e [+])
+            int browserCount = 0;
+            foreach (TabPage t in tabControl.TabPages)
+            {
+                if (t != tabNotes && t != tabAddButton) browserCount++;
+            }
+            if (browserCount == 0)
             {
                 AddNewBrowserTab("https://www.google.com");
             }
@@ -786,15 +1049,9 @@ namespace PrivateViewerApp
 
         private void CloseCurrentBrowserTab()
         {
-            if (tabControl.SelectedTab != null && tabControl.SelectedTab != tabNotes)
+            if (tabControl.SelectedTab != null && tabControl.SelectedTab != tabNotes && tabControl.SelectedTab != tabAddButton)
             {
-                TabPage current = tabControl.SelectedTab;
-                WebView2 wv = null;
-                foreach (Control c in current.Controls)
-                {
-                    if (c is WebView2) { wv = (WebView2)c; break; }
-                }
-                CloseBrowserTab(current, wv);
+                CloseBrowserTab(tabControl.SelectedTab);
             }
         }
 
@@ -845,7 +1102,7 @@ namespace PrivateViewerApp
         }
 
         // ==============================================================================
-        // GESTIONE RIPRISTINO / VISIBILITÀ DA TRAY ICON (AFFIDABILE AL 100%)
+        // GESTIONE RIPRISTINO / VISIBILITÀ DA TRAY ICON
         // ==============================================================================
         public void RestoreWindow()
         {
@@ -939,9 +1196,10 @@ namespace PrivateViewerApp
                     }
                     else if (key == Keys.Tab)
                     {
-                        if (tabControl.TabCount > 1)
+                        if (tabControl.TabCount > 2)
                         {
-                            tabControl.SelectedIndex = (tabControl.SelectedIndex + 1) % tabControl.TabCount;
+                            int nextIdx = (tabControl.SelectedIndex + 1) % (tabControl.TabCount - 1);
+                            tabControl.SelectedIndex = nextIdx;
                             return true;
                         }
                     }

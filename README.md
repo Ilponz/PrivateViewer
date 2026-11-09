@@ -1,4 +1,4 @@
-# 🛡️ PrivateViewer (Dark Title Bar & Zen Mode Edition)
+# 🛡️ PrivateViewer (Chrome-Style Multi-Tab & Dark Edition)
 
 [![Author](https://img.shields.io/badge/Author-Alex%20Ponzin%20(%40Ilponz)-blue.svg)](https://github.com/Ilponz)
 [![License](https://img.shields.io/badge/License-Proprietary%20Attribution-red.svg)](https://github.com/Ilponz/PrivateViewer/blob/main/LICENSE)
@@ -31,28 +31,36 @@ SetWindowDisplayAffinity(this.Handle, 0x00000011);
 
 ---
 
-## ✨ Nuove Funzionalità v2.3
+## ✨ Barra Schede in Stile Browser (Chrome/Edge) v2.4
 
-1. **🖤 Barra del Titolo Nativa Nera (Dark Title Bar):**
-   * Tramite l'API nativa DWM di Windows (`DwmSetWindowAttribute`), la barra superiore del titolo con il nome della finestra e i tasti di riduzione, ingrandimento e chiusura (`✕`) è ora **completamente nera** con testo bianco, eliminando la fastidiosa barra chiara standard di Windows.
-2. **👁️ Modalità Focus / Nascondi Menu (Zen Mode):**
-   * Premi il pulsante **`▲ Nascondi Menu`** o la scorciatoia **`Ctrl + M`** (oppure `F1`) per collassare tutte le barre superiori e visualizzare **solo le schede e le pagine web a tutto schermo**.
-   * Quando il menu è nascosto, appare una discreta mini-barra con il pulsante **`▼ Mostra Menu (Ctrl+M)`** per riaprirlo con un clic.
-3. **🖥️ Modalità Schermo Intero Immersiva (`F11`):**
-   * Premi **`F11`** per passare alla modalità senza bordi a schermo intero (Zero distrazioni).
-4. **👻 Modalità Stealth (Invisibile nella Barra delle Applicazioni):**
-   * L'applicazione non compare nella barra delle applicazioni di Windows in basso.
-   * Icona Tray (scudo) affidabile al 100% per ripristinare/nascondere la finestra (click sinistro) o aprire il menu contestuale (click destro).
-5. **📑 Browser Multi-Scheda Completo (Multi-Tab Chromium):**
-   * Nuova Scheda: **`➕ Scheda`** o **`Ctrl + T`**.
-   * Chiudi Scheda: **`✕`** o **`Ctrl + W`**.
-   * Scheda successiva: **`Ctrl + Tab`**.
-   * Layout responsive al 100%: si adatta a qualsiasi dimensione senza sovrapposizioni.
-6. **📂 Visualizzatore Documenti PDF & File Locali:**
-   * Apri file PDF o immagini dal pulsante dedicato o semplicemente trascinandoli dentro la finestra (Drag-and-Drop).
-7. **🚀 Centro Web Apps con 1 Clic:**
+1. **🔄 Sposta e Riordina le Schede (Drag & Drop):**
+   * Clicca con il mouse su qualsiasi scheda e trascinala a destra o sinistra per riordinarla liberamente in tempo reale, proprio come in Google Chrome.
+2. **➕ Aggiungi Schede Facilmente:**
+   * Clicca sul pulsante permanente **`➕`** posizionato all'estremità delle schede.
+   * Fai **doppio clic sullo spazio vuoto** della barra per aprire subito una nuova scheda.
+   * Scorciatoia rapida: **`Ctrl + T`**.
+3. **✕ Rimuovi e Chiudi le Schede:**
+   * Fai **clic con la rotellina (tasto centrale)** direttamente sulla scheda per chiuderla istantaneamente.
+   * Clicca sul pulsante **`✕`** presente nella barra della scheda o usa **`Ctrl + W`**.
+   * Fai **clic destro sulla scheda** per aprire il menu contestuale:
+     * *✕ Chiudi Scheda*
+     * *🚫 Chiudi le altre schede*
+     * *📄 Duplica Scheda* (apre un clone con lo stesso link)
+     * *🔄 Ricarica*
+     * *⬅️ Sposta a Sinistra* / *➡️ Sposta a Destra*
+4. **🖤 Barra del Titolo Nativa Nera (Dark Title Bar):**
+   * La barra in alto di Windows (con titolo e pulsanti riduci, ingrandisci e chiudi `✕`) è 100% nera con scritte e icone bianche via API DWM nativa.
+5. **👁️ Modalità Focus / Nascondi Menu (Zen Mode):**
+   * Tasto **`▲ Nascondi Menu`** o **`Ctrl + M`** (oppure `F1`) per nascondere tutti i menu superiori e visualizzare **solo le pagine web a tutto schermo**.
+   * Mini-barra a scomparsa con il tasto **`▼ Mostra Menu (Ctrl+M)`** per ripristinare i menu con un clic.
+6. **🖥️ Schermo Intero Immersivo (`F11`):**
+   * Passa alla visualizzazione a schermo intero senza bordi né barre con un solo tasto.
+7. **👻 Modalità Stealth (Invisibile nella Barra Applicazioni):**
+   * L'applicazione non compare nella barra di Windows in basso; è accessibile da monitor e da System Tray.
+8. **📂 Visualizzatore Documenti PDF & File Locali:**
+   * Apri PDF o immagini dal tasto dedicato o semplicemente trascinandoli dentro la finestra (Drag-and-Drop).
+9. **🚀 Centro Web Apps con 1 Clic:**
    * Pulsanti rapidi per **ChatGPT**, **Gemini**, **WhatsApp Web**, **Telegram**, **Wikipedia**, **Calcolatrice**, ecc.
-8. **Boss Key Globale (`ESC`):** Nasconde la finestra istantaneamente nella barra di sistema.
 
 ---
 

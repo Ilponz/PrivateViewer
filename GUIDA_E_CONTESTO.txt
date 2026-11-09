@@ -1,6 +1,6 @@
 ================================================================================
                          PRIVATEVIEWER - GUIDA COMPLETA
-                  (Dark Title Bar & Zen Mode Edition v2.3)
+                  (Chrome-Style Multi-Tab & Dark Edition v2.4)
 ================================================================================
 
 INDICE DEI CONTENUTI
@@ -32,30 +32,38 @@ seduto davanti al monitor fisico, ma risulta completamente INVISIBILE a:
 - AVVIO:
   Fai doppio clic su "PrivateViewer.exe".
 
+- GESTIONE SCHEDE COME UN VERO BROWSER (CHROME / EDGE):
+  * AGGIUNGERE:
+    - Clicca sulla scheda permanente [➕] posizionata all'estremita' destra delle schede.
+    - Fai DOPPIO CLIC su uno spazio vuoto della barra delle schede.
+    - Premi [Ctrl + T] o clicca su "➕ Scheda" in alto.
+  * SPOSTARE / RIORDINARE:
+    - Clicca con il mouse su qualsiasi scheda e TRASCINALA (Drag & Drop) a sinistra 
+      o a destra per riordinare la barra delle schede in tempo reale.
+    - Clicca col tasto destro sulla scheda e seleziona "Sposta a Sinistra" / "Sposta a Destra".
+  * TOGLIERE / RIMUOVERE:
+    - Fai clic con la ROTELLINA DEL MOUSE (tasto centrale) su qualsiasi scheda per chiuderla.
+    - Clicca col TASTO DESTRO sulla scheda e scegli "Chiudi Scheda" o "Chiudi le altre schede".
+    - Clicca sul tasto [✕] rosso nella barra della scheda oppure usa [Ctrl + W].
+  * DUPLICARE:
+    - Clicca col tasto destro sulla scheda e scegli "Duplica Scheda" per aprirne un clone.
+
 - BARRA DEL TITOLO NERA NATIVA (DARK TITLE BAR):
   La barra in alto con il titolo e i pulsanti di riduzione, ingrandimento e 
-  chiusura [X] e' ora completamente nera con scritte bianche, perfettamente 
-  integrata con il tema scuro dell'applicazione.
+  chiusura [X] e' ora completamente nera con scritte bianche via API DWM nativa.
 
 - MODALITA' FOCUS / NASCONDI MENU (ZEN MODE):
-  * Clicca su "▲ Nascondi Menu" oppure usa la scorciatoia da tastiera [Ctrl + M] 
-    (o il tasto [F1]) per nascondere all'istante le barre dei comandi superiori 
-    e visualizzare SOLO le schede e le pagine web.
-  * Quando i menu sono nascosti, una sottile barra superiore mostra il tasto 
-    "▼ Mostra Menu (Ctrl+M)" per ripristinare i menu in qualsiasi momento.
-  * Premendo [F11] si attiva la modalita' a Schermo Intero totale senza bordi.
+  * Clicca su "▲ Nascondi Menu" oppure premi [Ctrl + M] (o [F1]) per nascondere 
+    all'istante tutte le barre superiori e visualizzare SOLO le schede e le pagine web.
+  * Una sottile barra superiore con il tasto "▼ Mostra Menu (Ctrl+M)" permette di 
+    ripristinare i menu con un clic.
+  * Premendo [F11] si passa alla modalita' Schermo Intero totale senza bordi.
 
 - MODALITA' STEALTH (INVISIBILE NELLA BARRA DELLE APPLICAZIONI):
   Di default, l'applicazione NON compare nella barra delle applicazioni in basso 
   ("👻 Stealth").
   L'icona dello scudo nella System Tray permette di ripristinare la finestra con 
   un clic sinistro o di aprire il menu contestuale con il clic destro.
-
-- SISTEMA A SCHEDE MULTIPLE (MULTI-TAB BROWSER):
-  * Clicca su "➕ Scheda" oppure usa [Ctrl + T] per una nuova scheda.
-  * Chiudi la scheda corrente con [✕] o con [Ctrl + W].
-  * Naviga tra le schede con [Ctrl + Tab].
-  * Barra URL dinamica al 100% che si adatta a qualsiasi dimensione della finestra.
 
 - VISUALIZZATORE PDF E DOCUMENTI:
   * Clicca su "📂 File / PDF" per selezionare qualsiasi documento PDF o immagine.
@@ -78,7 +86,7 @@ il flag Win32:
     SetWindowDisplayAffinity(HWND hWnd, DWORD dwAffinity);
     // WDA_EXCLUDEFROMCAPTURE = 0x00000011
 
-Inoltre, per la barra del titolo scura viene utilizzata l'API DWM nativa:
+Per la barra del titolo scura viene utilizzata l'API DWM nativa:
 
     DwmSetWindowAttribute(hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, ref 1, 4);
     DwmSetWindowAttribute(hWnd, DWMWA_CAPTION_COLOR, ref 0x00141414, 4);
