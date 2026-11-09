@@ -12,14 +12,14 @@ using Microsoft.Web.WebView2.WinForms;
 // ==============================================================================
 // METADATI UFFICIALI E FIRMA INDELEBILE DELL'AUTORE (Proprietà file .EXE Windows)
 // ==============================================================================
-[assembly: AssemblyTitle("PrivateViewer (Chromium Multi-Tab Edition)")]
+[assembly: AssemblyTitle("PrivateViewer (Chromium Multi-Tab & WebApps Suite)")]
 [assembly: AssemblyDescription("Created by Alex Ponzin (@Ilponz) - Anti-Capture Multi-Tab Protected Workspace")]
 [assembly: AssemblyCompany("Alex Ponzin (Ilponz)")]
 [assembly: AssemblyProduct("PrivateViewer")]
 [assembly: AssemblyCopyright("Copyright © 2026 Alex Ponzin (@Ilponz). All rights reserved.")]
 [assembly: AssemblyTrademark("Original Software by Alex Ponzin")]
-[assembly: AssemblyVersion("2.0.0.0")]
-[assembly: AssemblyFileVersion("2.0.0.0")]
+[assembly: AssemblyVersion("2.1.0.0")]
+[assembly: AssemblyFileVersion("2.1.0.0")]
 
 namespace PrivateViewerApp
 {
@@ -51,12 +51,16 @@ namespace PrivateViewerApp
         private Button btnToggleAffinity;
         private CheckBox chkAlwaysOnTop;
         private CheckBox chkHideTaskbar;
+        private Panel pnlOpacity;
         private TrackBar tbOpacity;
         private Label lblOpacity;
 
         // Quick Tools Buttons
         private Button btnNewTab;
         private Button btnOpenFile;
+        private Button btnChatGPT;
+        private Button btnGemini;
+        private Button btnWhatsApp;
         private Button btnWebApps;
         private ContextMenuStrip menuWebApps;
         private Label lblShortcuts;
@@ -92,9 +96,9 @@ namespace PrivateViewerApp
 
         private void InitializeComponent()
         {
-            this.Text = "PrivateViewer (Multi-Tab Edition) - by Alex Ponzin (@Ilponz)";
-            this.Size = new Size(1060, 720);
-            this.MinimumSize = new Size(760, 480);
+            this.Text = "PrivateViewer (Multi-Tab & WebApps Suite) - by Alex Ponzin (@Ilponz)";
+            this.Size = new Size(1100, 720);
+            this.MinimumSize = new Size(800, 500);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = Color.FromArgb(30, 30, 30);
             this.ForeColor = Color.White;
@@ -160,13 +164,18 @@ namespace PrivateViewerApp
             };
             toolTip.SetToolTip(chkHideTaskbar, "Se attivo, il programma scompare completamente dalla barra delle applicazioni di Windows");
 
+            // Pannello Opacità ancorato a destra in modo stabile
+            pnlOpacity = new Panel();
+            pnlOpacity.Dock = DockStyle.Right;
+            pnlOpacity.Width = 190;
+            pnlOpacity.BackColor = Color.Transparent;
+
             lblOpacity = new Label();
             lblOpacity.Text = "Opacità:";
             lblOpacity.ForeColor = Color.LightGray;
             lblOpacity.Font = new Font("Segoe UI", 9);
             lblOpacity.AutoSize = true;
-            lblOpacity.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            lblOpacity.Location = new Point(780, 13);
+            lblOpacity.Location = new Point(10, 13);
 
             tbOpacity = new TrackBar();
             tbOpacity.Minimum = 30;
@@ -174,25 +183,26 @@ namespace PrivateViewerApp
             tbOpacity.Value = 100;
             tbOpacity.TickStyle = TickStyle.None;
             tbOpacity.Size = new Size(110, 30);
-            tbOpacity.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            tbOpacity.Location = new Point(840, 9);
+            tbOpacity.Location = new Point(70, 9);
             tbOpacity.Scroll += (s, e) => { this.Opacity = tbOpacity.Value / 100.0; };
+
+            pnlOpacity.Controls.Add(lblOpacity);
+            pnlOpacity.Controls.Add(tbOpacity);
 
             topPanel.Controls.Add(lblTitle);
             topPanel.Controls.Add(btnToggleAffinity);
             topPanel.Controls.Add(chkAlwaysOnTop);
             topPanel.Controls.Add(chkHideTaskbar);
-            topPanel.Controls.Add(lblOpacity);
-            topPanel.Controls.Add(tbOpacity);
+            topPanel.Controls.Add(pnlOpacity);
 
             // ==========================================
             // 2. Barra Rapida: Nuova Scheda, File, Web Apps
             // ==========================================
             quickBar = new Panel();
             quickBar.Dock = DockStyle.Top;
-            quickBar.Height = 38;
-            quickBar.BackColor = Color.FromArgb(30, 30, 30);
-            quickBar.Padding = new Padding(10, 4, 10, 4);
+            quickBar.Height = 40;
+            quickBar.BackColor = Color.FromArgb(28, 28, 28);
+            quickBar.Padding = new Padding(8, 5, 8, 5);
 
             btnNewTab = new Button();
             btnNewTab.Text = "➕ Nuova Scheda";
@@ -201,8 +211,8 @@ namespace PrivateViewerApp
             btnNewTab.FlatAppearance.BorderSize = 0;
             btnNewTab.BackColor = Color.FromArgb(0, 122, 204);
             btnNewTab.ForeColor = Color.White;
-            btnNewTab.Size = new Size(130, 28);
-            btnNewTab.Location = new Point(10, 5);
+            btnNewTab.Size = new Size(125, 28);
+            btnNewTab.Location = new Point(8, 6);
             btnNewTab.Cursor = Cursors.Hand;
             btnNewTab.Click += (s, e) => { AddNewBrowserTab("https://www.google.com"); };
             toolTip.SetToolTip(btnNewTab, "Apre una nuova scheda del browser protetta (Ctrl + T)");
@@ -212,43 +222,56 @@ namespace PrivateViewerApp
             btnOpenFile.Font = new Font("Segoe UI", 9);
             btnOpenFile.FlatStyle = FlatStyle.Flat;
             btnOpenFile.FlatAppearance.BorderSize = 0;
-            btnOpenFile.BackColor = Color.FromArgb(60, 60, 60);
+            btnOpenFile.BackColor = Color.FromArgb(55, 55, 55);
             btnOpenFile.ForeColor = Color.White;
-            btnOpenFile.Size = new Size(130, 28);
-            btnOpenFile.Location = new Point(150, 5);
+            btnOpenFile.Size = new Size(120, 28);
+            btnOpenFile.Location = new Point(140, 6);
             btnOpenFile.Cursor = Cursors.Hand;
             btnOpenFile.Click += BtnOpenFile_Click;
             toolTip.SetToolTip(btnOpenFile, "Visualizza un documento PDF, pagina HTML o immagine in modalità protetta");
 
+            // Web Apps Dirette a 1 clic
+            btnChatGPT = CreateQuickAppButton("🤖 ChatGPT", 268, 6, 105, 28, Color.FromArgb(16, 140, 110), "https://chatgpt.com", "Avvia ChatGPT in una scheda protetta");
+            btnGemini = CreateQuickAppButton("🧠 Gemini", 380, 6, 95, 28, Color.FromArgb(70, 70, 130), "https://gemini.google.com", "Avvia Google Gemini in una scheda protetta");
+            btnWhatsApp = CreateQuickAppButton("💬 WhatsApp", 482, 6, 110, 28, Color.FromArgb(30, 135, 70), "https://web.whatsapp.com", "Avvia WhatsApp Web in una scheda protetta");
+
             btnWebApps = new Button();
-            btnWebApps.Text = "🚀 Web Apps ▾";
+            btnWebApps.Text = "🚀 Altre App ▾";
             btnWebApps.Font = new Font("Segoe UI", 9);
             btnWebApps.FlatStyle = FlatStyle.Flat;
             btnWebApps.FlatAppearance.BorderSize = 0;
-            btnWebApps.BackColor = Color.FromArgb(60, 60, 60);
+            btnWebApps.BackColor = Color.FromArgb(55, 55, 55);
             btnWebApps.ForeColor = Color.White;
-            btnWebApps.Size = new Size(120, 28);
-            btnWebApps.Location = new Point(290, 5);
+            btnWebApps.Size = new Size(115, 28);
+            btnWebApps.Location = new Point(600, 6);
             btnWebApps.Cursor = Cursors.Hand;
             btnWebApps.Click += (s, e) => {
                 menuWebApps.Show(btnWebApps, new Point(0, btnWebApps.Height));
             };
-            toolTip.SetToolTip(btnWebApps, "Avvia rapidamente ChatGPT, WhatsApp Web, Gemini, Wikipedia, ecc.");
+            toolTip.SetToolTip(btnWebApps, "Altre Web Apps: Telegram, Wikipedia, Calcolatrice Scientifica, Traduttore, Google Docs...");
 
             SetupWebAppsMenu();
 
+            Panel pnlShortcuts = new Panel();
+            pnlShortcuts.Dock = DockStyle.Right;
+            pnlShortcuts.Width = 340;
+            pnlShortcuts.BackColor = Color.Transparent;
+
             lblShortcuts = new Label();
-            lblShortcuts.Text = "Scorciatoie: [Ctrl+T] Nuova Scheda | [Ctrl+W] Chiudi Scheda | [ESC] Boss Key";
+            lblShortcuts.Text = "Scorciatoie: [Ctrl+T] Scheda | [Ctrl+W] Chiudi | [ESC] Boss Key";
             lblShortcuts.Font = new Font("Segoe UI", 8.5f);
-            lblShortcuts.ForeColor = Color.Gray;
+            lblShortcuts.ForeColor = Color.DarkGray;
             lblShortcuts.AutoSize = true;
-            lblShortcuts.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            lblShortcuts.Location = new Point(quickBar.Width - 450, 11);
+            lblShortcuts.Location = new Point(10, 11);
+            pnlShortcuts.Controls.Add(lblShortcuts);
 
             quickBar.Controls.Add(btnNewTab);
             quickBar.Controls.Add(btnOpenFile);
+            quickBar.Controls.Add(btnChatGPT);
+            quickBar.Controls.Add(btnGemini);
+            quickBar.Controls.Add(btnWhatsApp);
             quickBar.Controls.Add(btnWebApps);
-            quickBar.Controls.Add(lblShortcuts);
+            quickBar.Controls.Add(pnlShortcuts);
 
             // ==========================================
             // 3. Barra Inferiore Watermark & Autore
@@ -340,7 +363,7 @@ namespace PrivateViewerApp
             txtNotes.Font = new Font("Consolas", 10);
             txtNotes.BorderStyle = BorderStyle.None;
             txtNotes.Text = "// =============================================================================\r\n" +
-                            "// PrivateViewer (Multi-Tab Edition)\r\n" +
+                            "// PrivateViewer (Multi-Tab & WebApps Suite)\r\n" +
                             "// Ideato e creato da: Alex Ponzin (@Ilponz)\r\n" +
                             "// Repository Ufficiale: https://github.com/Ilponz/PrivateViewer\r\n" +
                             "// =============================================================================\r\n" +
@@ -400,19 +423,33 @@ namespace PrivateViewerApp
             };
         }
 
+        private Button CreateQuickAppButton(string text, int x, int y, int width, int height, Color backColor, string url, string tip)
+        {
+            Button btn = new Button();
+            btn.Text = text;
+            btn.Font = new Font("Segoe UI", 9, FontStyle.Bold);
+            btn.FlatStyle = FlatStyle.Flat;
+            btn.FlatAppearance.BorderSize = 0;
+            btn.BackColor = backColor;
+            btn.ForeColor = Color.White;
+            btn.Size = new Size(width, height);
+            btn.Location = new Point(x, y);
+            btn.Cursor = Cursors.Hand;
+            btn.Click += (s, e) => { AddNewBrowserTab(url); };
+            toolTip.SetToolTip(btn, tip);
+            return btn;
+        }
+
         private void SetupWebAppsMenu()
         {
             menuWebApps = new ContextMenuStrip();
-            menuWebApps.Items.Add("🤖 ChatGPT", null, (s, e) => AddNewBrowserTab("https://chatgpt.com"));
-            menuWebApps.Items.Add("🧠 Google Gemini", null, (s, e) => AddNewBrowserTab("https://gemini.google.com"));
-            menuWebApps.Items.Add(new ToolStripSeparator());
-            menuWebApps.Items.Add("💬 WhatsApp Web", null, (s, e) => AddNewBrowserTab("https://web.whatsapp.com"));
             menuWebApps.Items.Add("✈️ Telegram Web", null, (s, e) => AddNewBrowserTab("https://web.telegram.org"));
-            menuWebApps.Items.Add(new ToolStripSeparator());
             menuWebApps.Items.Add("📖 Wikipedia", null, (s, e) => AddNewBrowserTab("https://it.wikipedia.org"));
+            menuWebApps.Items.Add(new ToolStripSeparator());
             menuWebApps.Items.Add("🧮 Calcolatrice Scientifica", null, (s, e) => AddNewBrowserTab("https://www.desmos.com/scientific"));
             menuWebApps.Items.Add("🌐 Google Traduttore", null, (s, e) => AddNewBrowserTab("https://translate.google.com"));
             menuWebApps.Items.Add("📄 Google Documenti", null, (s, e) => AddNewBrowserTab("https://docs.google.com"));
+            menuWebApps.Items.Add("🔍 Google Ricerca", null, (s, e) => AddNewBrowserTab("https://www.google.com"));
         }
 
         private void BtnOpenFile_Click(object sender, EventArgs e)
