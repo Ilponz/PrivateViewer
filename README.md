@@ -1,4 +1,4 @@
-# 🛡️ PrivateViewer (Chromium Edition)
+# 🛡️ PrivateViewer (Chromium Multi-Tab & Stealth Edition)
 
 [![Author](https://img.shields.io/badge/Author-Alex%20Ponzin%20(%40Ilponz)-blue.svg)](https://github.com/Ilponz)
 [![License](https://img.shields.io/badge/License-Proprietary%20Attribution-red.svg)](https://github.com/Ilponz/PrivateViewer/blob/main/LICENSE)
@@ -35,21 +35,35 @@ SetWindowDisplayAffinity(this.Handle, 0x00000011);
 
 ---
 
-## ✨ Funzionalità
+## ✨ Funzionalità Avanzate
 
 1. **Protezione Schermo Istantanea:** Attiva di default all'avvio con pulsante di stato per commutare (Attivo / Disattivo) e verificare il funzionamento.
-2. **Boss Key Globale (`ESC`):** Premendo `ESC` la finestra scompare all'istante nascondendosi nell'area di notifica (System Tray). Il tasto `ESC` viene intercettato anche quando il focus è dentro la pagina web o su un campo di input. Cliccando sull'icona dello scudo nella barra di sistema la finestra viene ripristinata.
-3. **Browser Chromium Moderno (Microsoft Edge WebView2):**
-   * Supporto completo per standard web moderni (HTML5, JavaScript, Google, ChatGPT, YouTube, GitHub, ecc.).
-   * Profilo utente e cache isolati in `%LOCALAPPDATA%\PrivateViewer\WebView2Profile`.
-   * Menu contestuale nativo (copia, incolla, ispezione).
-4. **Controlli di Navigazione Avanzati:**
-   * Pulsanti **Indietro** (`◀`), **Avanti** (`▶`), **Ricarica / Stop** (`🔄` / `✕`), e **Home** (`🏠`).
-   * **Barra URL Intelligente:** Riconosce automaticamente URL completi, domini privi di prefisso (es. `wikipedia.org`), server locali (`localhost:3000`) e ricerche testuali su Google.
-   * **Sincronizzazione Titolo:** Il titolo della scheda si sincronizza in tempo reale con il titolo della pagina visitata.
-   * Scorciatoie rapide: `F5` per ricaricare, `Invio` per navigare.
-5. **Note Private:** Area per appunti, testi o credenziali temporanee con funzione di salvataggio su file e pulizia.
-6. **Opzioni Finestra:**
+2. **👻 Modalità Stealth (Invisibile nella Barra delle Applicazioni):**
+   * L'applicazione non compare nella barra delle applicazioni di Windows in basso.
+   * Rimane controllabile a schermo e tramite l'icona protetta nella System Tray (area di notifica).
+   * Possibilità di attivare/disattivare la visibilità in barra con l'interruttore rapido in alto.
+3. **📑 Browser Multi-Scheda Completo (Multi-Tab Chromium):**
+   * Apri schede multiple contemporaneamente con il pulsante **`➕ Nuova Scheda`** o la scorciatoia **`Ctrl + T`**.
+   * Chiudi la scheda corrente con **`✕`** o **`Ctrl + W`**.
+   * Naviga tra le schede con **`Ctrl + Tab`**.
+   * Ogni scheda ha la sua barra di navigazione indipendente (Indietro, Avanti, Ricarica/Stop, Home, URL intelligente).
+   * I titoli delle schede si sincronizzano automaticamente con le pagine web aperte.
+4. **📂 Visualizzatore Documenti PDF & File Locali:**
+   * Apri file PDF, immagini, file HTML o note di testo tramite il pulsante **`📂 Apri PDF / File`**.
+   * Supporto **Drag-and-Drop**: trascina direttamente qualsiasi file PDF o immagine dentro la finestra per aprirlo in una nuova scheda protetta.
+5. **🚀 Centro Web Apps con 1 Clic:**
+   * Menu rapido per avviare in schede dedicate:
+     * 🤖 **ChatGPT**
+     * 🧠 **Google Gemini**
+     * 💬 **WhatsApp Web**
+     * ✈️ **Telegram Web**
+     * 📖 **Wikipedia**
+     * 🧮 **Calcolatrice Scientifica**
+     * 🌐 **Google Traduttore**
+     * 📄 **Google Docs**
+6. **Boss Key Globale (`ESC`):** Premendo `ESC` la finestra scompare all'istante nascondendosi nell'area di notifica (System Tray). Il tasto `ESC` viene intercettato anche quando il focus è dentro la pagina web o su un campo di input. Cliccando sull'icona dello scudo nella barra di sistema la finestra viene ripristinata.
+7. **Note Private:** Scheda dedicata per appunti, testi o credenziali con salvataggio su file e pulizia.
+8. **Opzioni Finestra:**
    * *Sempre in primo piano:* Mantiene il visualizzatore sopra le altre finestre di lavoro.
    * *Controllo Opacità:* Slider per regolare la trasparenza dal 30% al 100%.
 

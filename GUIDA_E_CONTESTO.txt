@@ -1,6 +1,6 @@
 ================================================================================
                          PRIVATEVIEWER - GUIDA COMPLETA
-                              (Chromium Edition)
+                  (Chromium Multi-Tab & Stealth Edition)
 ================================================================================
 
 INDICE DEI CONTENUTI
@@ -15,9 +15,10 @@ INDICE DEI CONTENUTI
 ================================================================================
 1. COS'E' PRIVATEVIEWER
 ================================================================================
-PrivateViewer e' una finestra di utilita' desktop autonoma e portatile per 
-Microsoft Windows progettata per proteggere contenuti sensibili, appunti privati 
-e navigazione web dalla cattura visiva accidentale.
+PrivateViewer e' una finestra di utilita' desktop autonoma, invisibile a catture 
+dello schermo e progettata per proteggere appunti, documenti PDF, pagine web e 
+applicazioni cloud (come ChatGPT o WhatsApp Web) dalla registrazione video o da 
+condivisioni schermo involontarie.
 
 Quando e' attiva, la finestra e' perfettamente visibile e utilizzabile da chi e' 
 seduto davanti al monitor fisico, ma risulta completamente INVISIBILE a:
@@ -29,47 +30,51 @@ seduto davanti al monitor fisico, ma risulta completamente INVISIBILE a:
 ================================================================================
 2. GUIDA ALL'USO (FUNZIONALITA' E CONTROLLI AVANZATI)
 ================================================================================
-L'applicazione e' pronta all'uso e include gia' tutti i moduli necessari.
-
 - AVVIO:
   Fai doppio clic su "PrivateViewer.exe".
 
-- INTERRUTTORE DI PROTEZIONE (In alto a sinistra):
-  * Tasto Verde "Invisibile a Cattura: ATTIVO": la protezione e' attiva. 
-    Qualsiasi screenshot o registrazione catturera' lo sfondo dietro la finestra.
-  * Tasto Rosso "Visibile a Cattura (DISATTIVO)": cliccando il pulsante puoi 
-    disattivare temporaneamente la protezione per verificare la differenza.
+- MODALITA' STEALTH (INVISIBILE NELLA BARRA DELLE APPLICAZIONI):
+  Di default, l'applicazione NON compare nella barra delle applicazioni di Windows 
+  in basso ("👻 Invisibile in Barra"). In questo modo non lascia icone o etichette 
+  visibili sulla barra.
+  Puoi disattivare questa modalita' deselezionando la casella in alto.
+
+- SISTEMA A SCHEDE MULTIPLE (MULTI-TAB BROWSER):
+  * Clicca su "➕ Nuova Scheda" oppure usa la scorciatoia da tastiera [Ctrl + T] 
+    per aprire una nuova pagina indipendente.
+  * Chiudi la scheda corrente cliccando su [✕] o premendo [Ctrl + W].
+  * Naviga tra le schede aperte con [Ctrl + Tab].
+  * Ciascuna scheda ha i propri controlli di navigazione (Indietro, Avanti, 
+    Ricarica/Stop, Home, URL intelligente).
+  * Il titolo di ogni scheda si adatta automaticamente al sito web visitato.
+
+- VISUALIZZATORE PDF E DOCUMENTI:
+  * Clicca su "📂 Apri PDF / File" per selezionare qualsiasi documento PDF, 
+    immagine o pagina HTML salvata sul computer e visualizzarla protetta.
+  * Puoi anche semplicemente TRASCINARE (Drag-and-Drop) un file PDF dentro la 
+    finestra per aprirlo istantaneamente in una nuova scheda.
+
+- MENU WEB APPS RAPIDE ("🚀 Web Apps ▾"):
+  Pulsante per aprire con un clic in schede dedicate:
+  * ChatGPT
+  * Google Gemini
+  * WhatsApp Web & Telegram Web
+  * Wikipedia & Google Traduttore
+  * Calcolatrice Scientifica online (Desmos)
+  * Google Docs
 
 - BOSS KEY RAPIDO GLOBALE (Tasto ESC):
-  Premendo il tasto [ESC] la finestra scompare all'istante nascondendosi nell'area 
+  Premendo [ESC] la finestra scompare all'istante nascondendosi nell'area 
   di notifica di Windows (System Tray in basso a destra, icona a scudo).
-  Il tasto [ESC] viene intercettato anche quando stai navigando attivamente o 
-  scrivendo all'interno di una pagina web.
+  Il tasto [ESC] viene intercettato ovunque ti trovi (anche dentro le pagine web).
   Per ripristinarla, fai clic sull'icona dello scudo nella barra di sistema.
 
-- BROWSER CHROMIUM MODERNO (Scheda 2):
-  Basato su Microsoft Edge WebView2 (motore Chromium moderno e aggiornato):
-  * Tasto [◀] (Indietro): Torna alla pagina precedente (Alt + Freccia Sinistra).
-  * Tasto [▶] (Avanti): Va alla pagina successiva (Alt + Freccia Destra).
-  * Tasto [🔄] / [✕] (Ricarica / Interrompi): Ricarica la pagina attiva (F5) o 
-    interrompe il caricamento se in corso.
-  * Tasto [🏠] (Home): Riporta istantaneamente alla pagina principale di Google.
-  * Barra URL Intelligente:
-    - Se inserisci un link (es. https://... o wikipedia.org), naviga direttamente.
-    - Se inserisci una parola o una frase, effettua automaticamente una ricerca 
-      su Google.
-    - Cliccando nella barra, il testo viene selezionato per una riscrittura rapida.
-  * Titolo Dinamico: Il titolo della scheda riflette il nome della pagina aperta.
-  * Profilo isolato: Cookie e cache sono salvati nella cartella utente locale.
-
 - NOTE PRIVATE (Scheda 1):
-  Un editor di testo integrato per scrivere appunti sensibili, incollare password 
-  temporanee o consultare promemoria senza rischiare che appaiano durante 
-  condivisioni dello schermo. Include i pulsanti "Pulisci Note" e "Salva su File".
+  Un editor di testo integrato per scrivere appunti sensibili o consultare 
+  promemoria. Include i pulsanti "Pulisci Note" e "Salva su File".
 
 - OPZIONI FINESTRA:
-  * Casella "Sempre in primo piano": mantiene la finestra sopra tutte le altre 
-    applicazioni mentre lavori su altri programmi.
+  * Casella "Sempre in primo piano": mantiene la finestra sopra tutte le altre.
   * Slider "Opacita'": regola la trasparenza della finestra (dal 30% al 100%).
 
 ================================================================================
@@ -86,8 +91,9 @@ I valori supportati sono:
   di Windows di non inserire i pixel di questa finestra nel buffer di composizione 
   usato dalle API di cattura (DirectX Desktop Duplication, BitBlt, Windows Graphics Capture).
 
-Poiche' il Desktop Window Manager gestisce la composizione a livello di scheda video, 
-la finestra viene esclusa a monte dalla registrazione senza sovraccaricare la CPU.
+Inoltre, impostando "ShowInTaskbar = false", l'applicazione viene rimossa dal 
+registro delle finestre di primo piano gestite dalla shell della barra delle 
+applicazioni di Windows.
 
 ================================================================================
 4. DIFFERENZE RISPETTO A TOOL DI DLL INJECTION (es. HideMyWindows)
@@ -113,8 +119,8 @@ PrivateViewer e' invece conforme agli standard Windows:
 - Presentazioni aziendali o didattiche: Quando condividi l'intero schermo durante 
   una riunione (Teams, Meet, Zoom) e vuoi tenere aperti appunti, la scaletta 
   o messaggi personali sul monitor senza che gli spettatori li vedano.
-- Streaming e dirette (OBS): Visualizzare la chat di moderazione o dati privati 
-  su un unico monitor senza dover usare un secondo schermo dedicato.
+- Streaming e dirette (OBS): Visualizzare la chat di moderazione, PDF di scalette, 
+  o web app private su un unico monitor senza dover usare un secondo schermo.
 - Condivisione desktop tra colleghi (Discord/Slack): Evitare che notifiche private 
   o credenziali compaiano per errore nel flusso video condiviso.
 
@@ -125,14 +131,12 @@ E' fondamentale comprendere che questo software NON e' uno strumento di elusione
 totale e NON rende invisibili nei confronti di software di supervisione e monitoraggio 
 dedicati (come Veyon o sistemi di proctoring/esame):
 
-1. Barra delle applicazioni (Taskbar): L'icona di PrivateViewer e' comunque visibile 
-   nella barra delle applicazioni o nell'area di notifica catturata.
-2. Monitoraggio processi: Software come Veyon permettono al docente di visualizzare 
+1. Monitoraggio processi: Software come Veyon permettono al docente di visualizzare 
    l'elenco di tutti i processi attivi; "PrivateViewer.exe" compare chiaramente.
-3. Movimento del mouse anomalo: L'insegnante o supervisore vedra' il cursore del mouse 
+2. Movimento del mouse anomalo: L'insegnante o supervisore vedra' il cursore del mouse 
    muoversi, cliccare e selezionare su un'area che nella sua visuale appare vuota, 
    generando un comportamento visivo palesemente sospetto.
-4. Regolamenti d'istituto: L'utilizzo di strumenti volti ad aggirare i software di 
+3. Regolamenti d'istituto: L'utilizzo di strumenti volti ad aggirare i software di 
    laboratorio costituisce violazione delle policy informatiche e puo' comportare 
    sanzioni disciplinari.
 

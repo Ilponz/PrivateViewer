@@ -12,14 +12,14 @@ using Microsoft.Web.WebView2.WinForms;
 // ==============================================================================
 // METADATI UFFICIALI E FIRMA INDELEBILE DELL'AUTORE (Proprietà file .EXE Windows)
 // ==============================================================================
-[assembly: AssemblyTitle("PrivateViewer (Chromium Edition)")]
-[assembly: AssemblyDescription("Created by Alex Ponzin (@Ilponz) - Anti-Capture Protected Utility")]
+[assembly: AssemblyTitle("PrivateViewer (Chromium Multi-Tab Edition)")]
+[assembly: AssemblyDescription("Created by Alex Ponzin (@Ilponz) - Anti-Capture Multi-Tab Protected Workspace")]
 [assembly: AssemblyCompany("Alex Ponzin (Ilponz)")]
 [assembly: AssemblyProduct("PrivateViewer")]
 [assembly: AssemblyCopyright("Copyright © 2026 Alex Ponzin (@Ilponz). All rights reserved.")]
 [assembly: AssemblyTrademark("Original Software by Alex Ponzin")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion("2.0.0.0")]
+[assembly: AssemblyFileVersion("2.0.0.0")]
 
 namespace PrivateViewerApp
 {
@@ -41,13 +41,25 @@ namespace PrivateViewerApp
         [DllImport("user32.dll", SetLastError = true)]
         private static extern bool GetWindowDisplayAffinity(IntPtr hWnd, out uint pdwAffinity);
 
-        // Top Bar Controls
+        // Core WebView2 Shared Environment
+        private static CoreWebView2Environment sharedEnv;
+
+        // Top Control Panels
         private Panel topPanel;
+        private Panel quickBar;
         private Label lblTitle;
         private Button btnToggleAffinity;
         private CheckBox chkAlwaysOnTop;
+        private CheckBox chkHideTaskbar;
         private TrackBar tbOpacity;
         private Label lblOpacity;
+
+        // Quick Tools Buttons
+        private Button btnNewTab;
+        private Button btnOpenFile;
+        private Button btnWebApps;
+        private ContextMenuStrip menuWebApps;
+        private Label lblShortcuts;
 
         // Bottom Watermark Panel (Indelebile)
         private Panel bottomPanel;
@@ -57,24 +69,11 @@ namespace PrivateViewerApp
         // Tabs
         private TabControl tabControl;
         private TabPage tabNotes;
-        private TabPage tabBrowser;
-
-        // Notes Tab Controls
         private TextBox txtNotes;
+        private int tabCounter = 1;
 
-        // Browser Tab Controls (WebView2 & Advanced Navigation)
-        private Panel browserBar;
-        private Button btnBack;
-        private Button btnForward;
-        private Button btnReload;
-        private Button btnHome;
-        private TextBox txtUrl;
-        private Button btnGo;
-        private WebView2 webView;
+        // Tooltip & State
         private ToolTip toolTip;
-        private bool isLoading = false;
-
-        // System Tray (Boss Key)
         private NotifyIcon trayIcon;
         private bool isProtected = true;
 
@@ -93,36 +92,40 @@ namespace PrivateViewerApp
 
         private void InitializeComponent()
         {
-            this.Text = "PrivateViewer (Chromium Edition) - by Alex Ponzin (@Ilponz)";
-            this.Size = new Size(980, 660);
-            this.MinimumSize = new Size(680, 450);
+            this.Text = "PrivateViewer (Multi-Tab Edition) - by Alex Ponzin (@Ilponz)";
+            this.Size = new Size(1060, 720);
+            this.MinimumSize = new Size(760, 480);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = Color.FromArgb(30, 30, 30);
             this.ForeColor = Color.White;
             this.KeyPreview = true;
+            this.AllowDrop = true;
+
+            // Nascondi dalla barra delle applicazioni Windows (Stealth Mode)
+            this.ShowInTaskbar = false;
 
             toolTip = new ToolTip();
             toolTip.AutoPopDelay = 4000;
             toolTip.InitialDelay = 500;
 
-            // Installa message filter globale per garantire che la Boss Key (ESC) funzioni sempre
+            // Installa message filter globale per garantire che la Boss Key (ESC) e Ctrl+T/W funzionino sempre
             Application.AddMessageFilter(this);
 
             // ==========================================
-            // 1. Barra Superiore di Controllo
+            // 1. Barra Superiore: Impostazioni & Stealth
             // ==========================================
             topPanel = new Panel();
             topPanel.Dock = DockStyle.Top;
-            topPanel.Height = 50;
+            topPanel.Height = 46;
             topPanel.BackColor = Color.FromArgb(40, 40, 40);
-            topPanel.Padding = new Padding(10, 8, 10, 8);
+            topPanel.Padding = new Padding(10, 6, 10, 6);
 
             lblTitle = new Label();
             lblTitle.Text = "🛡️ PrivateViewer";
             lblTitle.Font = new Font("Segoe UI", 11, FontStyle.Bold);
             lblTitle.ForeColor = Color.White;
             lblTitle.AutoSize = true;
-            lblTitle.Location = new Point(12, 14);
+            lblTitle.Location = new Point(12, 12);
 
             btnToggleAffinity = new Button();
             btnToggleAffinity.Text = "🛡️ Invisibile a Cattura: ATTIVO";
@@ -131,8 +134,8 @@ namespace PrivateViewerApp
             btnToggleAffinity.FlatStyle = FlatStyle.Flat;
             btnToggleAffinity.FlatAppearance.BorderSize = 0;
             btnToggleAffinity.Font = new Font("Segoe UI", 9, FontStyle.Bold);
-            btnToggleAffinity.Size = new Size(240, 32);
-            btnToggleAffinity.Location = new Point(170, 9);
+            btnToggleAffinity.Size = new Size(220, 30);
+            btnToggleAffinity.Location = new Point(165, 8);
             btnToggleAffinity.Cursor = Cursors.Hand;
             btnToggleAffinity.Click += BtnToggleAffinity_Click;
             toolTip.SetToolTip(btnToggleAffinity, "Attiva o disattiva la protezione da registrazione e screenshot");
@@ -142,15 +145,28 @@ namespace PrivateViewerApp
             chkAlwaysOnTop.ForeColor = Color.LightGray;
             chkAlwaysOnTop.Font = new Font("Segoe UI", 9);
             chkAlwaysOnTop.AutoSize = true;
-            chkAlwaysOnTop.Location = new Point(430, 15);
+            chkAlwaysOnTop.Location = new Point(400, 13);
             chkAlwaysOnTop.CheckedChanged += (s, e) => { this.TopMost = chkAlwaysOnTop.Checked; };
+
+            chkHideTaskbar = new CheckBox();
+            chkHideTaskbar.Text = "👻 Invisibile in Barra";
+            chkHideTaskbar.ForeColor = Color.YellowGreen;
+            chkHideTaskbar.Font = new Font("Segoe UI", 9, FontStyle.Bold);
+            chkHideTaskbar.AutoSize = true;
+            chkHideTaskbar.Checked = true;
+            chkHideTaskbar.Location = new Point(570, 13);
+            chkHideTaskbar.CheckedChanged += (s, e) => {
+                this.ShowInTaskbar = !chkHideTaskbar.Checked;
+            };
+            toolTip.SetToolTip(chkHideTaskbar, "Se attivo, il programma scompare completamente dalla barra delle applicazioni di Windows");
 
             lblOpacity = new Label();
             lblOpacity.Text = "Opacità:";
             lblOpacity.ForeColor = Color.LightGray;
             lblOpacity.Font = new Font("Segoe UI", 9);
             lblOpacity.AutoSize = true;
-            lblOpacity.Location = new Point(600, 15);
+            lblOpacity.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            lblOpacity.Location = new Point(780, 13);
 
             tbOpacity = new TrackBar();
             tbOpacity.Minimum = 30;
@@ -158,26 +174,93 @@ namespace PrivateViewerApp
             tbOpacity.Value = 100;
             tbOpacity.TickStyle = TickStyle.None;
             tbOpacity.Size = new Size(110, 30);
-            tbOpacity.Location = new Point(660, 12);
+            tbOpacity.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            tbOpacity.Location = new Point(840, 9);
             tbOpacity.Scroll += (s, e) => { this.Opacity = tbOpacity.Value / 100.0; };
 
             topPanel.Controls.Add(lblTitle);
             topPanel.Controls.Add(btnToggleAffinity);
             topPanel.Controls.Add(chkAlwaysOnTop);
+            topPanel.Controls.Add(chkHideTaskbar);
             topPanel.Controls.Add(lblOpacity);
             topPanel.Controls.Add(tbOpacity);
 
             // ==========================================
-            // 2. Barra Inferiore Watermark & Autore
+            // 2. Barra Rapida: Nuova Scheda, File, Web Apps
+            // ==========================================
+            quickBar = new Panel();
+            quickBar.Dock = DockStyle.Top;
+            quickBar.Height = 38;
+            quickBar.BackColor = Color.FromArgb(30, 30, 30);
+            quickBar.Padding = new Padding(10, 4, 10, 4);
+
+            btnNewTab = new Button();
+            btnNewTab.Text = "➕ Nuova Scheda";
+            btnNewTab.Font = new Font("Segoe UI", 9, FontStyle.Bold);
+            btnNewTab.FlatStyle = FlatStyle.Flat;
+            btnNewTab.FlatAppearance.BorderSize = 0;
+            btnNewTab.BackColor = Color.FromArgb(0, 122, 204);
+            btnNewTab.ForeColor = Color.White;
+            btnNewTab.Size = new Size(130, 28);
+            btnNewTab.Location = new Point(10, 5);
+            btnNewTab.Cursor = Cursors.Hand;
+            btnNewTab.Click += (s, e) => { AddNewBrowserTab("https://www.google.com"); };
+            toolTip.SetToolTip(btnNewTab, "Apre una nuova scheda del browser protetta (Ctrl + T)");
+
+            btnOpenFile = new Button();
+            btnOpenFile.Text = "📂 Apri PDF / File";
+            btnOpenFile.Font = new Font("Segoe UI", 9);
+            btnOpenFile.FlatStyle = FlatStyle.Flat;
+            btnOpenFile.FlatAppearance.BorderSize = 0;
+            btnOpenFile.BackColor = Color.FromArgb(60, 60, 60);
+            btnOpenFile.ForeColor = Color.White;
+            btnOpenFile.Size = new Size(130, 28);
+            btnOpenFile.Location = new Point(150, 5);
+            btnOpenFile.Cursor = Cursors.Hand;
+            btnOpenFile.Click += BtnOpenFile_Click;
+            toolTip.SetToolTip(btnOpenFile, "Visualizza un documento PDF, pagina HTML o immagine in modalità protetta");
+
+            btnWebApps = new Button();
+            btnWebApps.Text = "🚀 Web Apps ▾";
+            btnWebApps.Font = new Font("Segoe UI", 9);
+            btnWebApps.FlatStyle = FlatStyle.Flat;
+            btnWebApps.FlatAppearance.BorderSize = 0;
+            btnWebApps.BackColor = Color.FromArgb(60, 60, 60);
+            btnWebApps.ForeColor = Color.White;
+            btnWebApps.Size = new Size(120, 28);
+            btnWebApps.Location = new Point(290, 5);
+            btnWebApps.Cursor = Cursors.Hand;
+            btnWebApps.Click += (s, e) => {
+                menuWebApps.Show(btnWebApps, new Point(0, btnWebApps.Height));
+            };
+            toolTip.SetToolTip(btnWebApps, "Avvia rapidamente ChatGPT, WhatsApp Web, Gemini, Wikipedia, ecc.");
+
+            SetupWebAppsMenu();
+
+            lblShortcuts = new Label();
+            lblShortcuts.Text = "Scorciatoie: [Ctrl+T] Nuova Scheda | [Ctrl+W] Chiudi Scheda | [ESC] Boss Key";
+            lblShortcuts.Font = new Font("Segoe UI", 8.5f);
+            lblShortcuts.ForeColor = Color.Gray;
+            lblShortcuts.AutoSize = true;
+            lblShortcuts.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            lblShortcuts.Location = new Point(quickBar.Width - 450, 11);
+
+            quickBar.Controls.Add(btnNewTab);
+            quickBar.Controls.Add(btnOpenFile);
+            quickBar.Controls.Add(btnWebApps);
+            quickBar.Controls.Add(lblShortcuts);
+
+            // ==========================================
+            // 3. Barra Inferiore Watermark & Autore
             // ==========================================
             bottomPanel = new Panel();
             bottomPanel.Dock = DockStyle.Bottom;
             bottomPanel.Height = 26;
-            bottomPanel.BackColor = Color.FromArgb(22, 22, 22);
+            bottomPanel.BackColor = Color.FromArgb(20, 20, 20);
             bottomPanel.Padding = new Padding(10, 4, 10, 4);
 
             lblFooterStatus = new Label();
-            lblFooterStatus.Text = "🔒 Schermo Protetto | Boss Key: [ESC] per nascondere";
+            lblFooterStatus.Text = "🔒 Schermo Protetto | Trascina qui qualsiasi PDF o file per aprirlo";
             lblFooterStatus.Font = new Font("Segoe UI", 8.5f);
             lblFooterStatus.ForeColor = Color.DarkGray;
             lblFooterStatus.AutoSize = true;
@@ -196,19 +279,19 @@ namespace PrivateViewerApp
             lnkWatermark.LinkClicked += (s, e) => {
                 try { Process.Start(REPO_URL); } catch { }
             };
-            toolTip.SetToolTip(lnkWatermark, "Clicca per visitare il repository ufficiale di Alex Ponzin");
+            toolTip.SetToolTip(lnkWatermark, "Visita il repository ufficiale di Alex Ponzin");
 
             bottomPanel.Controls.Add(lblFooterStatus);
             bottomPanel.Controls.Add(lnkWatermark);
 
             // ==========================================
-            // 3. Tab Control
+            // 4. Tab Control (Note & Schede Browser)
             // ==========================================
             tabControl = new TabControl();
             tabControl.Dock = DockStyle.Fill;
             tabControl.Font = new Font("Segoe UI", 9);
 
-            // --- SCHEDA 1: NOTE PRIVATE ---
+            // --- SCHEDA PREDEFINITA: NOTE PRIVATE ---
             tabNotes = new TabPage("📝 Note Private");
             tabNotes.BackColor = Color.FromArgb(25, 25, 25);
 
@@ -257,79 +340,168 @@ namespace PrivateViewerApp
             txtNotes.Font = new Font("Consolas", 10);
             txtNotes.BorderStyle = BorderStyle.None;
             txtNotes.Text = "// =============================================================================\r\n" +
-                            "// PrivateViewer (Chromium Edition)\r\n" +
+                            "// PrivateViewer (Multi-Tab Edition)\r\n" +
                             "// Ideato e creato da: Alex Ponzin (@Ilponz)\r\n" +
                             "// Repository Ufficiale: https://github.com/Ilponz/PrivateViewer\r\n" +
                             "// =============================================================================\r\n" +
-                            "// Questa finestra e tutto il suo contenuto sono invisibili a screenshot e stream.\r\n\r\n";
+                            "// Questa finestra e tutto il suo contenuto sono invisibili a screenshot e stream.\r\n" +
+                            "// Puoi aprire schede multiple con il tasto [+] o premendo Ctrl + T.\r\n\r\n";
 
             tabNotes.Controls.Add(txtNotes);
             tabNotes.Controls.Add(notesToolbar);
+            tabControl.TabPages.Add(tabNotes);
 
-            // --- SCHEDA 2: BROWSER PRIVATO (Chromium WebView2) ---
-            tabBrowser = new TabPage("🌐 Browser Privato");
-            tabBrowser.BackColor = Color.FromArgb(25, 25, 25);
+            this.Controls.Add(tabControl);
+            this.Controls.Add(bottomPanel);
+            this.Controls.Add(quickBar);
+            this.Controls.Add(topPanel);
 
-            // Barra di Navigazione Avanzata
-            browserBar = new Panel();
-            browserBar.Dock = DockStyle.Top;
-            browserBar.Height = 40;
-            browserBar.BackColor = Color.FromArgb(35, 35, 35);
-            browserBar.Padding = new Padding(6, 6, 6, 6);
-
-            btnBack = CreateNavButton("◀", 8, 6, 32, 28, "Indietro (Alt+Freccia Sinistra)");
-            btnBack.Enabled = false;
-            btnBack.Click += (s, e) => { if (webView != null && webView.CanGoBack) webView.GoBack(); };
-
-            btnForward = CreateNavButton("▶", 44, 6, 32, 28, "Avanti (Alt+Freccia Destra)");
-            btnForward.Enabled = false;
-            btnForward.Click += (s, e) => { if (webView != null && webView.CanGoForward) webView.GoForward(); };
-
-            btnReload = CreateNavButton("🔄", 80, 6, 32, 28, "Ricarica (F5)");
-            btnReload.Click += (s, e) => {
-                if (webView != null && webView.CoreWebView2 != null)
+            // Icona di notifica nella System Tray per "Boss Key"
+            trayIcon = new NotifyIcon();
+            trayIcon.Text = "PrivateViewer - Alex Ponzin (Clicca per mostrare)";
+            trayIcon.Icon = SystemIcons.Shield;
+            trayIcon.Visible = true;
+            trayIcon.Click += (s, e) => {
+                if (this.Visible)
                 {
-                    if (isLoading)
-                        webView.Stop();
-                    else
-                        webView.Reload();
+                    this.Activate();
+                }
+                else
+                {
+                    this.Show();
+                    this.WindowState = FormWindowState.Normal;
+                    this.Activate();
                 }
             };
 
-            btnHome = CreateNavButton("🏠", 116, 6, 32, 28, "Pagina iniziale (Google)");
-            btnHome.Click += (s, e) => { NavigateTo("https://www.google.com"); };
+            // Supporto Drag and Drop di file (es. PDF o immagini)
+            this.DragEnter += (s, e) => {
+                if (e.Data.GetDataPresent(DataFormats.FileDrop))
+                    e.Effect = DragDropEffects.Copy;
+            };
+            this.DragDrop += (s, e) => {
+                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                if (files != null && files.Length > 0)
+                {
+                    foreach (string file in files)
+                    {
+                        AddNewBrowserTab(new Uri(file).AbsoluteUri);
+                    }
+                }
+            };
 
-            txtUrl = new TextBox();
-            txtUrl.Text = "https://www.google.com";
+            // Inizializzazione Display Affinity e prima scheda
+            this.HandleCreated += (s, e) => {
+                ApplyProtection(isProtected);
+            };
+
+            this.Load += (s, e) => {
+                AddNewBrowserTab("https://www.google.com");
+            };
+        }
+
+        private void SetupWebAppsMenu()
+        {
+            menuWebApps = new ContextMenuStrip();
+            menuWebApps.Items.Add("🤖 ChatGPT", null, (s, e) => AddNewBrowserTab("https://chatgpt.com"));
+            menuWebApps.Items.Add("🧠 Google Gemini", null, (s, e) => AddNewBrowserTab("https://gemini.google.com"));
+            menuWebApps.Items.Add(new ToolStripSeparator());
+            menuWebApps.Items.Add("💬 WhatsApp Web", null, (s, e) => AddNewBrowserTab("https://web.whatsapp.com"));
+            menuWebApps.Items.Add("✈️ Telegram Web", null, (s, e) => AddNewBrowserTab("https://web.telegram.org"));
+            menuWebApps.Items.Add(new ToolStripSeparator());
+            menuWebApps.Items.Add("📖 Wikipedia", null, (s, e) => AddNewBrowserTab("https://it.wikipedia.org"));
+            menuWebApps.Items.Add("🧮 Calcolatrice Scientifica", null, (s, e) => AddNewBrowserTab("https://www.desmos.com/scientific"));
+            menuWebApps.Items.Add("🌐 Google Traduttore", null, (s, e) => AddNewBrowserTab("https://translate.google.com"));
+            menuWebApps.Items.Add("📄 Google Documenti", null, (s, e) => AddNewBrowserTab("https://docs.google.com"));
+        }
+
+        private void BtnOpenFile_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog ofd = new OpenFileDialog())
+            {
+                ofd.Title = "Seleziona un Documento PDF o File da visualizzare";
+                ofd.Filter = "File supportati (*.pdf;*.html;*.txt;*.jpg;*.png)|*.pdf;*.html;*.htm;*.txt;*.jpg;*.png;*.webp;*.svg|PDF (*.pdf)|*.pdf|Tutti i file (*.*)|*.*";
+                if (ofd.ShowDialog() == DialogResult.OK)
+                {
+                    string fileUrl = new Uri(ofd.FileName).AbsoluteUri;
+                    AddNewBrowserTab(fileUrl);
+                }
+            }
+        }
+
+        private async Task EnsureSharedEnvAsync()
+        {
+            if (sharedEnv == null)
+            {
+                string dataFolder = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "PrivateViewer", "WebView2Profile"
+                );
+                Directory.CreateDirectory(dataFolder);
+                sharedEnv = await CoreWebView2Environment.CreateAsync(null, dataFolder, null);
+            }
+        }
+
+        // ==============================================================================
+        // GESTIONE SCHEDE MULTIPLE BROWSER
+        // ==============================================================================
+        public async void AddNewBrowserTab(string initialUrl)
+        {
+            TabPage tabPage = new TabPage("🌐 Scheda " + tabCounter++);
+            tabPage.BackColor = Color.FromArgb(25, 25, 25);
+
+            // Barra di navigazione della scheda
+            Panel browserBar = new Panel();
+            browserBar.Dock = DockStyle.Top;
+            browserBar.Height = 40;
+            browserBar.BackColor = Color.FromArgb(35, 35, 35);
+            browserBar.Padding = new Padding(6);
+
+            Button btnBack = CreateNavButton("◀", 8, 6, 32, 28, "Indietro (Alt+Freccia Sinistra)");
+            btnBack.Enabled = false;
+
+            Button btnForward = CreateNavButton("▶", 44, 6, 32, 28, "Avanti (Alt+Freccia Destra)");
+            btnForward.Enabled = false;
+
+            Button btnReload = CreateNavButton("🔄", 80, 6, 32, 28, "Ricarica (F5)");
+            Button btnHome = CreateNavButton("🏠", 116, 6, 32, 28, "Pagina iniziale (Google)");
+
+            TextBox txtUrl = new TextBox();
+            txtUrl.Text = initialUrl;
             txtUrl.Font = new Font("Segoe UI", 9.5f);
             txtUrl.Location = new Point(154, 7);
-            txtUrl.Width = browserBar.Width - 224;
+            txtUrl.Width = browserBar.Width - 268;
             txtUrl.Anchor = AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right;
             txtUrl.BackColor = Color.FromArgb(24, 24, 24);
             txtUrl.ForeColor = Color.White;
             txtUrl.BorderStyle = BorderStyle.FixedSingle;
-            txtUrl.KeyDown += (s, e) => {
-                if (e.KeyCode == Keys.Enter)
-                {
-                    NavigateUrl();
-                    e.SuppressKeyPress = true;
-                }
-            };
             txtUrl.Click += (s, e) => { txtUrl.SelectAll(); };
 
-            btnGo = new Button();
+            Button btnGo = new Button();
             btnGo.Text = "➔";
             btnGo.Font = new Font("Segoe UI", 10, FontStyle.Bold);
             btnGo.FlatStyle = FlatStyle.Flat;
             btnGo.FlatAppearance.BorderSize = 0;
             btnGo.ForeColor = Color.White;
             btnGo.BackColor = Color.FromArgb(0, 122, 204);
-            btnGo.Size = new Size(54, 28);
-            btnGo.Location = new Point(browserBar.Width - 62, 6);
+            btnGo.Size = new Size(46, 28);
+            btnGo.Location = new Point(browserBar.Width - 100, 6);
             btnGo.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             btnGo.Cursor = Cursors.Hand;
-            btnGo.Click += (s, e) => { NavigateUrl(); };
-            toolTip.SetToolTip(btnGo, "Naviga all'indirizzo o cerca su Google (Invio)");
+            toolTip.SetToolTip(btnGo, "Naviga o cerca su Google (Invio)");
+
+            Button btnCloseTab = new Button();
+            btnCloseTab.Text = "✕";
+            btnCloseTab.Font = new Font("Segoe UI", 9, FontStyle.Bold);
+            btnCloseTab.FlatStyle = FlatStyle.Flat;
+            btnCloseTab.FlatAppearance.BorderSize = 0;
+            btnCloseTab.ForeColor = Color.LightGray;
+            btnCloseTab.BackColor = Color.FromArgb(65, 30, 30);
+            btnCloseTab.Size = new Size(36, 28);
+            btnCloseTab.Location = new Point(browserBar.Width - 46, 6);
+            btnCloseTab.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnCloseTab.Cursor = Cursors.Hand;
+            toolTip.SetToolTip(btnCloseTab, "Chiudi questa scheda (Ctrl + W)");
 
             browserBar.Controls.Add(btnBack);
             browserBar.Controls.Add(btnForward);
@@ -337,42 +509,132 @@ namespace PrivateViewerApp
             browserBar.Controls.Add(btnHome);
             browserBar.Controls.Add(txtUrl);
             browserBar.Controls.Add(btnGo);
+            browserBar.Controls.Add(btnCloseTab);
 
-            // WebView2 Control
-            webView = new WebView2();
+            WebView2 webView = new WebView2();
             webView.Dock = DockStyle.Fill;
             webView.DefaultBackgroundColor = Color.FromArgb(25, 25, 25);
 
-            tabBrowser.Controls.Add(webView);
-            tabBrowser.Controls.Add(browserBar);
+            bool isTabLoading = false;
 
-            tabControl.TabPages.Add(tabNotes);
-            tabControl.TabPages.Add(tabBrowser);
-
-            this.Controls.Add(tabControl);
-            this.Controls.Add(bottomPanel);
-            this.Controls.Add(topPanel);
-
-            // Icona di notifica nella System Tray per "Boss Key"
-            trayIcon = new NotifyIcon();
-            trayIcon.Text = "PrivateViewer - Alex Ponzin (Clicca per ripristinare)";
-            trayIcon.Icon = SystemIcons.Shield;
-            trayIcon.Visible = false;
-            trayIcon.Click += (s, e) => {
-                this.Show();
-                this.WindowState = FormWindowState.Normal;
-                this.Activate();
-                trayIcon.Visible = false;
+            Action executeNavigate = () => {
+                string q = txtUrl.Text.Trim();
+                if (string.IsNullOrEmpty(q)) return;
+                if (q.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+                    q.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ||
+                    q.StartsWith("file://", StringComparison.OrdinalIgnoreCase))
+                {
+                    try { webView.CoreWebView2.Navigate(q); } catch { }
+                }
+                else if (!q.Contains(" ") && (q.Contains(".") || q.StartsWith("localhost", StringComparison.OrdinalIgnoreCase)))
+                {
+                    try { webView.CoreWebView2.Navigate("https://" + q); } catch { }
+                }
+                else
+                {
+                    try { webView.CoreWebView2.Navigate("https://www.google.com/search?q=" + Uri.EscapeDataString(q)); } catch { }
+                }
             };
 
-            // Inizializzazione Display Affinity e WebView2 al caricamento
-            this.HandleCreated += (s, e) => {
-                ApplyProtection(true);
+            txtUrl.KeyDown += (s, e) => {
+                if (e.KeyCode == Keys.Enter)
+                {
+                    executeNavigate();
+                    e.SuppressKeyPress = true;
+                }
+            };
+            btnGo.Click += (s, e) => { executeNavigate(); };
+
+            btnBack.Click += (s, e) => { if (webView.CanGoBack) webView.GoBack(); };
+            btnForward.Click += (s, e) => { if (webView.CanGoForward) webView.GoForward(); };
+            btnHome.Click += (s, e) => { if (webView.CoreWebView2 != null) webView.CoreWebView2.Navigate("https://www.google.com"); };
+            btnReload.Click += (s, e) => {
+                if (webView.CoreWebView2 != null)
+                {
+                    if (isTabLoading) webView.Stop();
+                    else webView.Reload();
+                }
             };
 
-            this.Load += (s, e) => {
-                InitializeWebView();
-            };
+            btnCloseTab.Click += (s, e) => { CloseBrowserTab(tabPage, webView); };
+
+            tabPage.Controls.Add(webView);
+            tabPage.Controls.Add(browserBar);
+            tabControl.TabPages.Add(tabPage);
+            tabControl.SelectedTab = tabPage;
+
+            try
+            {
+                await EnsureSharedEnvAsync();
+                await webView.EnsureCoreWebView2Async(sharedEnv);
+
+                webView.NavigationStarting += (s, e) => {
+                    isTabLoading = true;
+                    btnReload.Text = "✕";
+                };
+
+                webView.NavigationCompleted += (s, e) => {
+                    isTabLoading = false;
+                    btnReload.Text = "🔄";
+                    btnBack.Enabled = webView.CanGoBack;
+                    btnBack.ForeColor = btnBack.Enabled ? Color.White : Color.Gray;
+                    btnForward.Enabled = webView.CanGoForward;
+                    btnForward.ForeColor = btnForward.Enabled ? Color.White : Color.Gray;
+                };
+
+                webView.SourceChanged += (s, e) => {
+                    if (webView.Source != null && !txtUrl.Focused)
+                    {
+                        txtUrl.Text = webView.Source.ToString();
+                    }
+                };
+
+                if (webView.CoreWebView2 != null)
+                {
+                    webView.CoreWebView2.DocumentTitleChanged += (s, e) => {
+                        string title = webView.CoreWebView2.DocumentTitle;
+                        if (!string.IsNullOrWhiteSpace(title))
+                        {
+                            if (title.Length > 22) title = title.Substring(0, 19) + "...";
+                            tabPage.Text = "🌐 " + title;
+                        }
+                    };
+                    webView.CoreWebView2.Navigate(initialUrl);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Errore caricamento WebView2: " + ex.Message, "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void CloseBrowserTab(TabPage tab, WebView2 webView)
+        {
+            if (tab == tabNotes) return; // Non chiudere la scheda delle note
+
+            tabControl.TabPages.Remove(tab);
+            try { webView.Dispose(); } catch { }
+            try { tab.Dispose(); } catch { }
+
+            // Se non ci sono più schede aperte oltre a Note, apri una nuova scheda vuota
+            if (tabControl.TabPages.Count == 1)
+            {
+                AddNewBrowserTab("https://www.google.com");
+            }
+        }
+
+        private void CloseCurrentBrowserTab()
+        {
+            if (tabControl.SelectedTab != null && tabControl.SelectedTab != tabNotes)
+            {
+                TabPage current = tabControl.SelectedTab;
+                WebView2 wv = null;
+                foreach (Control c in current.Controls)
+                {
+                    if (c is WebView2) { wv = (WebView2)c; break; }
+                }
+                CloseBrowserTab(current, wv);
+            }
         }
 
         private Button CreateNavButton(string text, int x, int y, int width, int height, string tip)
@@ -389,131 +651,6 @@ namespace PrivateViewerApp
             btn.Cursor = Cursors.Hand;
             toolTip.SetToolTip(btn, tip);
             return btn;
-        }
-
-        private async void InitializeWebView()
-        {
-            try
-            {
-                string dataFolder = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                    "PrivateViewer", "WebView2Profile"
-                );
-                Directory.CreateDirectory(dataFolder);
-
-                var env = await CoreWebView2Environment.CreateAsync(null, dataFolder, null);
-                await webView.EnsureCoreWebView2Async(env);
-
-                // Configura eventi del browser Chromium
-                webView.NavigationStarting += WebView_NavigationStarting;
-                webView.NavigationCompleted += WebView_NavigationCompleted;
-                webView.SourceChanged += WebView_SourceChanged;
-
-                if (webView.CoreWebView2 != null)
-                {
-                    webView.CoreWebView2.DocumentTitleChanged += CoreWebView2_DocumentTitleChanged;
-                }
-
-                NavigateTo("https://www.google.com");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    "Impossibile inizializzare Microsoft Edge WebView2.\r\n" +
-                    "Dettaglio: " + ex.Message + "\r\n\r\n" +
-                    "Verifica che il runtime Microsoft Edge WebView2 sia installato nel sistema.",
-                    "Errore WebView2", MessageBoxButtons.OK, MessageBoxIcon.Error
-                );
-            }
-        }
-
-        private void WebView_NavigationStarting(object sender, CoreWebView2NavigationStartingEventArgs e)
-        {
-            isLoading = true;
-            btnReload.Text = "✕";
-            toolTip.SetToolTip(btnReload, "Interrompi caricamento (Esc)");
-        }
-
-        private void WebView_NavigationCompleted(object sender, CoreWebView2NavigationCompletedEventArgs e)
-        {
-            isLoading = false;
-            btnReload.Text = "🔄";
-            toolTip.SetToolTip(btnReload, "Ricarica (F5)");
-            UpdateNavButtons();
-        }
-
-        private void WebView_SourceChanged(object sender, CoreWebView2SourceChangedEventArgs e)
-        {
-            if (webView.Source != null && !txtUrl.Focused)
-            {
-                txtUrl.Text = webView.Source.ToString();
-            }
-            UpdateNavButtons();
-        }
-
-        private void CoreWebView2_DocumentTitleChanged(object sender, object e)
-        {
-            if (webView.CoreWebView2 != null)
-            {
-                string title = webView.CoreWebView2.DocumentTitle;
-                if (!string.IsNullOrWhiteSpace(title))
-                {
-                    if (title.Length > 25)
-                        title = title.Substring(0, 22) + "...";
-                    tabBrowser.Text = "🌐 " + title;
-                }
-                else
-                {
-                    tabBrowser.Text = "🌐 Browser Privato";
-                }
-            }
-        }
-
-        private void UpdateNavButtons()
-        {
-            btnBack.Enabled = webView.CanGoBack;
-            btnBack.ForeColor = btnBack.Enabled ? Color.White : Color.Gray;
-            btnForward.Enabled = webView.CanGoForward;
-            btnForward.ForeColor = btnForward.Enabled ? Color.White : Color.Gray;
-        }
-
-        private void NavigateUrl()
-        {
-            string query = txtUrl.Text.Trim();
-            if (string.IsNullOrEmpty(query)) return;
-
-            // URL completo o schema
-            if (query.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
-                query.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ||
-                query.StartsWith("file://", StringComparison.OrdinalIgnoreCase))
-            {
-                NavigateTo(query);
-            }
-            // Dominio web senza protocollo (es. wikipedia.org o localhost:3000)
-            else if (!query.Contains(" ") && (query.Contains(".") || query.StartsWith("localhost", StringComparison.OrdinalIgnoreCase)))
-            {
-                NavigateTo("https://" + query);
-            }
-            // Ricerca web su Google
-            else
-            {
-                NavigateTo("https://www.google.com/search?q=" + Uri.EscapeDataString(query));
-            }
-        }
-
-        private void NavigateTo(string url)
-        {
-            if (webView != null && webView.CoreWebView2 != null)
-            {
-                try
-                {
-                    webView.CoreWebView2.Navigate(url);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Errore di navigazione: " + ex.Message, "Browser Privato", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }
-            }
         }
 
         private void ApplyProtection(bool enable)
@@ -537,7 +674,7 @@ namespace PrivateViewerApp
             else
             {
                 int err = Marshal.GetLastWin32Error();
-                MessageBox.Show("Impossibile impostare Display Affinity. Codice errore: " + err, "Errore API", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Impossibile impostare Display Affinity. Codice: " + err, "Errore API", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 
@@ -552,23 +689,42 @@ namespace PrivateViewerApp
             trayIcon.Visible = true;
         }
 
-        // Intercettazione messaggi Windows a livello globale per il form e i controlli
+        // ==============================================================================
+        // GESTIONE SCORCIATOIE DA TASTIERA GLOBALI (Boss Key, Ctrl+T, Ctrl+W, Ctrl+Tab)
+        // ==============================================================================
         public bool PreFilterMessage(ref Message m)
         {
             if (m.Msg == WM_KEYDOWN)
             {
                 Keys key = (Keys)(int)m.WParam & Keys.KeyCode;
+
+                // Boss Key: ESC
                 if (key == Keys.Escape)
                 {
                     HideToTray();
                     return true;
                 }
-                else if (key == Keys.F5 && tabControl.SelectedTab == tabBrowser)
+
+                bool ctrlPressed = (Control.ModifierKeys & Keys.Control) == Keys.Control;
+                if (ctrlPressed)
                 {
-                    if (webView != null && webView.CoreWebView2 != null)
+                    if (key == Keys.T)
                     {
-                        webView.Reload();
+                        AddNewBrowserTab("https://www.google.com");
                         return true;
+                    }
+                    else if (key == Keys.W)
+                    {
+                        CloseCurrentBrowserTab();
+                        return true;
+                    }
+                    else if (key == Keys.Tab)
+                    {
+                        if (tabControl.TabCount > 1)
+                        {
+                            tabControl.SelectedIndex = (tabControl.SelectedIndex + 1) % tabControl.TabCount;
+                            return true;
+                        }
                     }
                 }
             }
@@ -582,13 +738,15 @@ namespace PrivateViewerApp
                 HideToTray();
                 return true;
             }
-            else if (keyData == Keys.F5 && tabControl.SelectedTab == tabBrowser)
+            if (keyData == (Keys.Control | Keys.T))
             {
-                if (webView != null && webView.CoreWebView2 != null)
-                {
-                    webView.Reload();
-                    return true;
-                }
+                AddNewBrowserTab("https://www.google.com");
+                return true;
+            }
+            if (keyData == (Keys.Control | Keys.W))
+            {
+                CloseCurrentBrowserTab();
+                return true;
             }
             return base.ProcessCmdKey(ref msg, keyData);
         }
@@ -600,10 +758,6 @@ namespace PrivateViewerApp
             {
                 trayIcon.Visible = false;
                 trayIcon.Dispose();
-            }
-            if (webView != null)
-            {
-                webView.Dispose();
             }
             base.OnFormClosing(e);
         }
